@@ -1,98 +1,66 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Snapbite™ Admin Panel</title>
   <style>
     body { background:#1a1a1a; color:#fff; font-family:'Poppins',sans-serif; margin:0; padding:2rem; }
     h1 { color:#ff9500; text-align:center; }
-    .category { margin-bottom:2rem; }
-    .category h2 { color:#ff9500; border-bottom:1px solid #444; padding-bottom:5px; }
-    .item-list { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; }
-    .item { background:#2a2a2a; padding:1rem; border-radius:8px; display:flex; flex-direction:column; }
-    .item label { margin-top:10px; display:flex; align-items:center; justify-content:space-between; font-weight:500; }
-    .item input[type=checkbox] { transform: scale(1.2); }
-    footer { text-align:center; font-size:0.8rem; color:#999; margin-top:3rem; }
+    .order { background:#2a2a2a; border-radius:10px; padding:1rem; margin-bottom:1rem; }
+    .order h2 { margin:0; color:#ff9500; font-size:1.2rem; }
+    .order p { margin:0.3rem 0; font-size:0.9rem; }
+    .container { max-width:800px; margin:auto; }
   </style>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app/",
-  projectId: "snapbite-admin",
-  storageBucket: "snapbite-admin.appspot.com",
-  messagingSenderId: "YOUR_MSG_ID",
-  appId: "YOUR_APP_ID"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const updateStatus = (item, status) => {
-  set(ref(db, 'menu/' + item), status);
-};
-
-const items = document.querySelectorAll('.item input[type=checkbox]');
-items.forEach(checkbox => {
-  checkbox.addEventListener('change', () => {
-    updateStatus(checkbox.id, checkbox.checked);
-  });
-});
-
-items.forEach(checkbox => {
-  const itemRef = ref(db, 'menu/' + checkbox.id);
-  onValue(itemRef, (snapshot) => {
-    checkbox.checked = snapshot.val() === true;
-  });
-});
-
-  </script>
 </head>
 <body>
-  <h1>Snapbite™ Admin Menu Status</h1>  <div class="category">
-    <h2>🍔 Burger Series</h2>
-    <div class="item-list">
-      <div class="item"><div>Primebite™</div><label><span>Available</span><input type="checkbox" id="Primebite" /></label></div>
-      <div class="item"><div>Beef N' Cheese™</div><label><span>Available</span><input type="checkbox" id="BeefNCheese" /></label></div>
-      <div class="item"><div>The Fun Guy™</div><label><span>Available</span><input type="checkbox" id="FunGuy" /></label></div>
-      <div class="item"><div>The Fixer™</div><label><span>Available</span><input type="checkbox" id="Fixer" /></label></div>
-      <div class="item"><div>Chickbite™</div><label><span>Available</span><input type="checkbox" id="Chickbite" /></label></div>
-      <div class="item"><div>Goldcut™</div><label><span>Available</span><input type="checkbox" id="Goldcut" /></label></div>
-      <div class="item"><div>The Cap Cut™</div><label><span>Available</span><input type="checkbox" id="CapCut" /></label></div>
-      <div class="item"><div>Stripstack™</div><label><span>Available</span><input type="checkbox" id="Stripstack" /></label></div>
-    </div>
-  </div>  <div class="category">
-    <h2>🌮 Tex-Mex Series</h2>
-    <div class="item-list">
-      <div class="item"><div>Smoke Beef Taco™</div><label><span>Available</span><input type="checkbox" id="SmokeBeefTaco" /></label></div>
-      <div class="item"><div>Smokey Chop Taco™</div><label><span>Available</span><input type="checkbox" id="SmokeyChopTaco" /></label></div>
-      <div class="item"><div>Mix Taco™</div><label><span>Available</span><input type="checkbox" id="MixTaco" /></label></div>
-      <div class="item"><div>Smoke Beef Quesadilla™</div><label><span>Available</span><input type="checkbox" id="SmokeBeefQuesadilla" /></label></div>
-      <div class="item"><div>Smoke Chicken Quesadilla™</div><label><span>Available</span><input type="checkbox" id="SmokeChickenQuesadilla" /></label></div>
-      <div class="item"><div>Mix Quesadilla™</div><label><span>Available</span><input type="checkbox" id="MixQuesadilla" /></label></div>
-    </div>
-  </div>  <div class="category">
-    <h2>🌭 Sausage Series</h2>
-    <div class="item-list">
-      <div class="item"><div>Classic Sausage™</div><label><span>Available</span><input type="checkbox" id="ClassicSausage" /></label></div>
-      <div class="item"><div>Chickola™</div><label><span>Available</span><input type="checkbox" id="Chickola" /></label></div>
-    </div>
-  </div>  <div class="category">
-    <h2>🍟 Snack Series</h2>
-    <div class="item-list">
-      <div class="item"><div>Popcorn Chicken</div><label><span>Available</span><input type="checkbox" id="PopcornChicken" /></label></div>
-    </div>
-  </div>  <div class="category">
-    <h2>✨ Add-Ons</h2>
-    <div class="item-list">
-      <div class="item"><div>Cheese</div><label><span>Available</span><input type="checkbox" id="Cheese" /></label></div>
-      <div class="item"><div>Egg</div><label><span>Available</span><input type="checkbox" id="Egg" /></label></div>
-      <div class="item"><div>Mushroom</div><label><span>Available</span><input type="checkbox" id="Mushroom" /></label></div>
-      <div class="item"><div>Bacon</div><label><span>Available</span><input type="checkbox" id="Bacon" /></label></div>
-    </div>
-  </div>  <footer>
-    Snapbite™ Admin Panel &mdash; Real-time Update | No Rules. Just Bite. Repeat.
-  </footer>
-</body>
+  <div class="container">
+    <h1>Snapbite™ Live Orders</h1>
+    <div id="orders"></div>
+  </div>  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
+      authDomain: "snapbite-admin.firebaseapp.com",
+      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "snapbite-admin",
+      storageBucket: "snapbite-admin.firebasestorage.app",
+      messagingSenderId: "146625734660",
+      appId: "1:146625734660:web:23ada593e4818ed7332d51",
+      measurementId: "G-7RR3W1WJYK"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const ordersRef = ref(db, 'orders/');
+    const ordersDiv = document.getElementById('orders');
+
+    onValue(ordersRef, (snapshot) => {
+      const data = snapshot.val();
+      ordersDiv.innerHTML = '';
+      if (data) {
+        Object.keys(data).reverse().forEach((key) => {
+          const order = data[key];
+          const div = document.createElement('div');
+          div.className = 'order';
+          div.innerHTML = `
+            <h2>Order by ${order.name}</h2>
+            <p><strong>Contact:</strong> ${order.phone}</p>
+            <p><strong>Items:</strong> ${order.items}</p>
+            <p><strong>Add-ons:</strong> ${order.addons || '-'}</p>
+            <p><strong>Sauce:</strong> ${order.sauce || '-'}</p>
+            <p><strong>Notes:</strong> ${order.notes || '-'}</p>
+            <p><strong>Payment:</strong> ${order.payment}</p>
+            <p><strong>Pickup Time:</strong> ${order.pickup || '-'}</p>
+            <p><strong>Total:</strong> RM${order.total}</p>
+          `;
+          ordersDiv.appendChild(div);
+        });
+      } else {
+        ordersDiv.innerHTML = '<p>No orders yet.</p>';
+      }
+    });
+  </script></body>
 </html>
