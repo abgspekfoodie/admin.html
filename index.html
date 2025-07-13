@@ -1,75 +1,62 @@
 <!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Snapbite™ Admin Panel</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0d0d0d;
-      color: #f0f0f0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
       margin: 0;
       padding: 1rem;
-      max-width: 1000px;
-      margin: auto;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
     }
     h1, h2 {
       color: #ff9500;
-      text-align: center;
     }
     .section {
-      background: #1c1c1c;
-      padding: 1.5rem;
-      border-radius: 12px;
+      background: #1e1e1e;
+      padding: 1rem;
+      border-radius: 10px;
       margin-bottom: 2rem;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
-    .toggle-row {
+    .toggle-switch {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 1rem;
     }
-    .switch {
+    input[type="checkbox"] {
+      width: 40px;
+      height: 20px;
+      appearance: none;
+      background: #444;
+      border-radius: 10px;
       position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 24px;
-    }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
+      outline: none;
       cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-      border-radius: 24px;
     }
-    .slider:before {
-      position: absolute;
+    input[type="checkbox"]:checked {
+      background: #ff9500;
+    }
+    input[type="checkbox"]::before {
       content: "";
-      height: 18px;
+      position: absolute;
       width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .4s;
+      height: 18px;
+      background: #fff;
       border-radius: 50%;
+      top: 1px;
+      left: 1px;
+      transition: 0.3s;
     }
-    input:checked + .slider {
-      background-color: #ff9500;
-    }
-    input:checked + .slider:before {
-      transform: translateX(26px);
+    input[type="checkbox"]:checked::before {
+      left: 21px;
     }
     table {
       width: 100%;
@@ -77,158 +64,149 @@
       margin-top: 1rem;
     }
     th, td {
-      padding: 10px;
-      border-bottom: 1px solid #333;
+      border: 1px solid #333;
+      padding: 8px;
       text-align: left;
     }
     th {
-      background: #262626;
-    }
-    .report-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    .report-box {
-      background: #262626;
-      border-radius: 10px;
-      padding: 1rem;
-      text-align: center;
-    }
-    .report-box h3 {
-      margin: 0;
-      color: #ff9500;
-      font-size: 1rem;
-    }
-    .report-box p {
-      margin: 0.5rem 0 0;
-      font-size: 1.2rem;
-      font-weight: bold;
+      background: #222;
     }
     canvas {
-      margin-top: 2rem;
-      background: #1a1a1a;
-      border-radius: 10px;
-      padding: 1rem;
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
   <h1>Snapbite™ Admin Panel</h1>  <div class="section">
-    <div class="toggle-row">
-      <h2>Shop Status</h2>
-      <label class="switch">
-        <input type="checkbox" id="offdayToggle">
-        <span class="slider"></span>
-      </label>
+    <h2>Shop Status</h2>
+    <div class="toggle-switch">
+      <input type="checkbox" id="offdayToggle">
+      <label id="offdayLabel">Shop is OPEN</label>
     </div>
-    <p id="offdayLabel">Checking status...</p>
   </div>  <div class="section">
-    <h2>Sales Report</h2>
-    <div class="report-grid">
-      <div class="report-box">
-        <h3>Gross Total</h3>
-        <p id="grossTotal">RM 0.00</p>
-      </div>
-      <div class="report-box">
-        <h3>Net Total</h3>
-        <p id="netTotal">RM 0.00</p>
-      </div>
-      <div class="report-box">
-        <h3>Gross Profit</h3>
-        <p id="grossProfit">RM 0.00</p>
-      </div>
-      <div class="report-box">
-        <h3>Net Profit</h3>
-        <p id="netProfit">RM 0.00</p>
-      </div>
-    </div>
-    <canvas id="salesChart" height="100"></canvas>
-  </div>  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
-      authDomain: "snapbite-admin.firebaseapp.com",
-      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "snapbite-admin",
-      storageBucket: "snapbite-admin.appspot.com",
-      messagingSenderId: "146625734660",
-      appId: "1:146625734660:web:23ada593e4818ed7332d51"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    <h2>Menu & Add-on Availability</h2>
+    <table id="menuTable">
+      <thead><tr><th>Category</th><th>Item</th><th>Available</th></tr></thead>
+      <tbody id="menuBody"></tbody>
+    </table>
+    <table id="addonTable">
+      <thead><tr><th>Add-on</th><th>Available</th></tr></thead>
+      <tbody id="addonBody"></tbody>
+    </table>
+  </div>  <div class="section">
+    <h2>Sales Summary</h2>
+    <canvas id="salesChart" height="150"></canvas>
+  </div>  <div class="section">
+    <h2>Archived Orders</h2>
+    <div id="archive"></div>
+  </div><script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
+  authDomain: "snapbite-admin.firebaseapp.com",
+  databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "snapbite-admin",
+  storageBucket: "snapbite-admin.appspot.com",
+  messagingSenderId: "146625734660",
+  appId: "1:146625734660:web:23ada593e4818ed7332d51"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    const offdayToggle = document.getElementById('offdayToggle');
-    const offdayLabel = document.getElementById('offdayLabel');
+const menuData = {
+  "Beef": ["Primebite™", "Beef N’ Cheese™", "The Fun Guy™", "The Fixer™"],
+  "Chicken": ["Chickbite™", "Goldcut™", "The Cap Cut™", "Stripstack™"],
+  "Tex-Mex": ["Smoke Beef Taco™", "Smokey Chicken Taco™", "Mix Taco™", "Smoke Beef Quesadilla™", "Smoke Chicken Quesadilla™", "Mix Quesadilla™"],
+  "Sausage": ["Classic Sausage™", "Loaded Sausage™"]
+};
 
-    db.ref('settings/offday').on('value', snap => {
-      const val = snap.val();
-      offdayToggle.checked = !!val;
-      updateOffdayLabel();
-    });
+const addons = ["Cheese", "Egg", "Bacon"];
 
-    offdayToggle.addEventListener('change', () => {
-      const status = offdayToggle.checked;
-      db.ref('settings/offday').set(status).then(updateOffdayLabel);
-    });
+const toggleShop = document.getElementById("offdayToggle");
+const labelShop = document.getElementById("offdayLabel");
 
-    function updateOffdayLabel() {
-      offdayLabel.textContent = offdayToggle.checked ? "Shop is CLOSED (Off Day)" : "Shop is OPEN";
-      offdayLabel.style.color = offdayToggle.checked ? '#ff3b3b' : '#00ff00';
-    }
+// Shop toggle
+function loadShopStatus() {
+  db.ref("settings/offday").on("value", snap => {
+    toggleShop.checked = !!snap.val();
+    labelShop.textContent = toggleShop.checked ? "Shop is CLOSED" : "Shop is OPEN";
+  });
+  toggleShop.addEventListener("change", () => {
+    db.ref("settings/offday").set(toggleShop.checked);
+  });
+}
 
-    // Sales Report (simple version)
-    async function loadSalesReport() {
-      const grossTotalEl = document.getElementById("grossTotal");
-      const netTotalEl = document.getElementById("netTotal");
-      const grossProfitEl = document.getElementById("grossProfit");
-      const netProfitEl = document.getElementById("netProfit");
-
-      const snapshot = await db.ref("orders").once("value");
-      const orders = snapshot.val() || {};
-      let gross = 0, net = 0, gp = 0, np = 0;
-
-      for (const id in orders) {
-        const o = orders[id];
-        const t = parseFloat(o.total || 0);
-        gross += t;
-        gp += t * 0.3;
+function renderMenuAvailability() {
+  const menuBody = document.getElementById("menuBody");
+  const addonBody = document.getElementById("addonBody");
+  db.ref("menuAvailability").once("value", snap => {
+    const avail = snap.val() || {};
+    menuBody.innerHTML = "";
+    for (const cat in menuData) {
+      for (const item of menuData[cat]) {
+        const id = item.toLowerCase().replace(/[^a-z0-9]/gi, "");
+        const available = avail[id] !== false;
+        const row = `<tr><td>${cat}</td><td>${item}</td><td><input type='checkbox' data-id='${id}' ${available ? "checked" : ""}></td></tr>`;
+        menuBody.innerHTML += row;
       }
-      net = gross;
-      np = gp;
-      grossTotalEl.textContent = `RM ${gross.toFixed(2)}`;
-      netTotalEl.textContent = `RM ${net.toFixed(2)}`;
-      grossProfitEl.textContent = `RM ${gp.toFixed(2)}`;
-      netProfitEl.textContent = `RM ${np.toFixed(2)}`;
     }
-
-    // Chart with dummy daily data (replace with real order dates if needed)
-    function renderChart() {
-      const ctx = document.getElementById('salesChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-          datasets: [{
-            label: 'Daily Sales',
-            data: [120, 90, 130, 160, 200, 300, 180],
-            backgroundColor: '#ff9500'
-          }]
-        },
-        options: {
-          plugins: {
-            legend: { display: false },
-            tooltip: { mode: 'index', intersect: false }
-          },
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
+    menuBody.querySelectorAll("input[type='checkbox']").forEach(cb => {
+      cb.addEventListener("change", e => {
+        const id = e.target.dataset.id;
+        db.ref("menuAvailability/" + id).set(e.target.checked);
       });
+    });
+  });
+  db.ref("addonAvailability").once("value", snap => {
+    const avail = snap.val() || {};
+    addonBody.innerHTML = "";
+    for (const addon of addons) {
+      const id = addon.toLowerCase();
+      const available = avail[id] !== false;
+      const row = `<tr><td>${addon}</td><td><input type='checkbox' data-id='${id}' ${available ? "checked" : ""}></td></tr>`;
+      addonBody.innerHTML += row;
     }
+    addonBody.querySelectorAll("input[type='checkbox']").forEach(cb => {
+      cb.addEventListener("change", e => {
+        const id = e.target.dataset.id;
+        db.ref("addonAvailability/" + id).set(e.target.checked);
+      });
+    });
+  });
+}
 
-    loadSalesReport();
-    renderChart();
-  </script></body>
+function loadSalesGraph() {
+  db.ref("orders").once("value", snap => {
+    const data = snap.val() || {};
+    const dates = {};
+    Object.values(data).forEach(o => {
+      const d = new Date(o.time).toLocaleDateString();
+      dates[d] = (dates[d] || 0) + o.total;
+    });
+    const labels = Object.keys(dates);
+    const values = Object.values(dates);
+    new Chart(document.getElementById("salesChart"), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: "Total Sales (RM)", backgroundColor: '#ff9500', data: values }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  });
+}
+
+function loadArchives() {
+  db.ref("orders").once("value", snap => {
+    const data = snap.val() || {};
+    const container = document.getElementById("archive");
+    container.innerHTML = Object.entries(data).reverse().slice(0, 10).map(([id, o]) => {
+      const time = new Date(o.time).toLocaleString();
+      const lines = o.items.map(i => `${i.name} x${i.quantity}`).join(", ");
+      return `<div><strong>${time}</strong><br>${lines}<br>Total: RM ${o.total.toFixed(2)}<hr></div>`;
+    }).join("");
+  });
+}
+
+loadShopStatus();
+renderMenuAvailability();
+loadSalesGraph();
+loadArchives();
+</script></body>
 </html>
