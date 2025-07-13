@@ -4,28 +4,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Snapbite™ Admin Panel</title>
   <style>
-    body { background:#1a1a1a; color:#fff; font-family:'Poppins',sans-serif; margin:0; padding:2rem; }
+    body { font-family:'Poppins', sans-serif; background:#1a1a1a; color:#fff; margin:0; padding:2rem; }
     h1 { color:#ff9500; text-align:center; }
-    .order { background:#2a2a2a; border-radius:10px; padding:1rem; margin-bottom:1rem; }
-    .order h2 { margin:0; color:#ff9500; font-size:1.2rem; }
-    .order p { margin:0.3rem 0; font-size:0.9rem; }
-    .container { max-width:800px; margin:auto; }
+    .order-list { max-width:1000px; margin:auto; margin-top:2rem; }
+    .order { border:1px solid #444; border-radius:10px; padding:1rem; margin-bottom:1.5rem; background:#2a2a2a; }
+    .order h3 { margin:0 0 0.5rem 0; color:#ff9500; }
+    .status { margin-top:1rem; }
+    select, button { padding:6px 10px; border-radius:5px; border:none; font-weight:bold; }
+    select { background:#333; color:#fff; }
+    button { background:#ff9500; color:#000; cursor:pointer; margin-left:10px; }
+    .summary { margin-top:1rem; font-size:0.9rem; color:#ccc; }
+    .profit-box { margin-top:3rem; padding:1rem; border-radius:10px; background:#333; max-width:1000px; margin-inline:auto; }
+    .profit-box h2 { color:#ff9500; margin-bottom:1rem; }
+    .profit-line { display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid #444; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Snapbite™ Live Orders</h1>
-    <div id="orders"></div>
+  <h1>Snapbite™ Admin Panel</h1>  <div class="order-list" id="orderList">
+    <!-- Orders will be populated here by Firebase -->
+  </div>  <div class="profit-box">
+    <h2>Profit Overview</h2>
+    <div class="profit-line">
+      <span>Gross Sales</span>
+      <span id="grossSales">RM0.00</span>
+    </div>
+    <div class="profit-line">
+      <span>Total Cost</span>
+      <span id="totalCost">RM0.00</span>
+    </div>
+    <div class="profit-line">
+      <strong>Net Profit</strong>
+      <strong id="netProfit">RM0.00</strong>
+    </div>
   </div>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
       authDomain: "snapbite-admin.firebaseapp.com",
       databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "snapbite-admin",
-      storageBucket: "snapbite-admin.firebasestorage.app",
+      storageBucket: "snapbite-admin.appspot.com",
       messagingSenderId: "146625734660",
       appId: "1:146625734660:web:23ada593e4818ed7332d51",
       measurementId: "G-7RR3W1WJYK"
@@ -34,33 +54,87 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const ordersRef = ref(db, 'orders/');
-    const ordersDiv = document.getElementById('orders');
+    const orderList = document.getElementById('orderList');
+    const grossSalesEl = document.getElementById('grossSales');
+    const totalCostEl = document.getElementById('totalCost');
+    const netProfitEl = document.getElementById('netProfit');
 
+    const COST_MAP = {
+      'Primebite': 6.79, 'Beef N’ Cheese': 7.27, 'The Fun Guy': 8.47, 'The Fixer': 9.97,
+      'Chickbite': 3.24, 'Goldcut': 3.72, 'The Cap Cut': 4.92, 'Stripstack': 5.52,
+      'Smoke Beef Taco': 7.33, 'Smokey Chicken Taco': 6.46, 'Mix Taco': 6.90,
+      'Smoke Beef Quesadilla': 11.15, 'Smoke Chicken Quesadilla': 9.66, 'Mix Quesadilla': 10.50,
+      'Classic Sausage': 3.50, 'Loaded Sausage': 6.70,
+      'Popcorn Chicken': 2.00,
+      'Cheese': 1.50, 'Egg': 1.00, 'Mushroom': 2.50, 'Bacon': 3.50
+    };
+
+    const getItemCost = (itemName) => {
+      for (const key in COST_MAP) {
+        if (itemName.includes(key)) return COST_MAP[key];
+      }
+      return 0;
+    };
+
+    const renderOrders = (orders) => {
+      orderList.innerHTML = '';
+      let gross = 0, cost = 0;
+      Object.entries(orders).forEach(([id, order]) => {
+        const div = document.createElement('div');
+        div.className = 'order';
+        div.innerHTML = `
+          <h3>Order: ${id}</h3>
+          <div><strong>Name:</strong> ${order.name || ''}</div>
+          <div><strong>Contact:</strong> ${order.phone || ''}</div>
+          <div><strong>Items:</strong><ul>$
+            {(order.items || []).map(i => `<li>${i.name} (${i.qty}) - RM${i.total}</li>`).join('')}</ul></div>
+          <div><strong>Sauces:</strong> ${(order.sauces || []).join(', ')}</div>
+          <div><strong>Add-ons:</strong> ${(order.addons || []).join(', ')}</div>
+          <div><strong>Notes:</strong> ${order.notes || '-'}</div>
+          <div><strong>Payment:</strong> ${order.payment || '-'}</div>
+          <div><strong>Pickup:</strong> ${order.pickup || '-'}</div>
+          <div><strong>Total:</strong> RM${order.total || '0.00'}</div>
+          <div class="status">
+            <label>Status: 
+              <select onchange="updateStatus('${id}', this.value)">
+                <option ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option ${order.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
+                <option ${order.status === 'Ready' ? 'selected' : ''}>Ready</option>
+                <option ${order.status === 'Completed' ? 'selected' : ''}>Completed</option>
+              </select>
+            </label>
+          </div>
+        `;
+
+        gross += parseFloat(order.total || 0);
+
+        let itemCost = 0;
+        (order.items || []).forEach(i => {
+          const c = getItemCost(i.name);
+          itemCost += (c * (i.qty || 1));
+        });
+        (order.addons || []).forEach(a => {
+          const c = getItemCost(a);
+          itemCost += c;
+        });
+
+        cost += itemCost;
+        orderList.appendChild(div);
+      });
+      grossSalesEl.textContent = `RM${gross.toFixed(2)}`;
+      totalCostEl.textContent = `RM${cost.toFixed(2)}`;
+      netProfitEl.textContent = `RM${(gross - cost).toFixed(2)}`;
+    };
+
+    window.updateStatus = function(id, status) {
+      const orderRef = ref(db, 'orders/' + id);
+      set(orderRef + '/status', status);
+    };
+
+    const ordersRef = ref(db, 'orders');
     onValue(ordersRef, (snapshot) => {
       const data = snapshot.val();
-      ordersDiv.innerHTML = '';
-      if (data) {
-        Object.keys(data).reverse().forEach((key) => {
-          const order = data[key];
-          const div = document.createElement('div');
-          div.className = 'order';
-          div.innerHTML = `
-            <h2>Order by ${order.name}</h2>
-            <p><strong>Contact:</strong> ${order.phone}</p>
-            <p><strong>Items:</strong> ${order.items}</p>
-            <p><strong>Add-ons:</strong> ${order.addons || '-'}</p>
-            <p><strong>Sauce:</strong> ${order.sauce || '-'}</p>
-            <p><strong>Notes:</strong> ${order.notes || '-'}</p>
-            <p><strong>Payment:</strong> ${order.payment}</p>
-            <p><strong>Pickup Time:</strong> ${order.pickup || '-'}</p>
-            <p><strong>Total:</strong> RM${order.total}</p>
-          `;
-          ordersDiv.appendChild(div);
-        });
-      } else {
-        ordersDiv.innerHTML = '<p>No orders yet.</p>';
-      }
+      if (data) renderOrders(data);
     });
   </script></body>
 </html>
