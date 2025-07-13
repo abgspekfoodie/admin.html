@@ -1,168 +1,128 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snapbite™ Admin Panel</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snapbite Admin Panel</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background-color: #121212;
-      color: #f5f5f5;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #111;
+      color: #fff;
     }
     header {
-      background-color: #1f1f1f;
-      color: gold;
-      padding: 1rem 2rem;
+      background: linear-gradient(to right, #000, #431a53);
+      padding: 1rem;
       text-align: center;
       font-size: 1.8rem;
-      font-weight: 600;
+      color: #ffd700;
+      font-weight: bold;
     }
-    .container {
+    main {
       padding: 2rem;
-      max-width: 1200px;
-      margin: auto;
-    }
-    .category {
-      margin-bottom: 2rem;
-      border-bottom: 1px solid #333;
-      padding-bottom: 1rem;
-    }
-    .category h2 {
-      color: #ffcc00;
-      border-left: 5px solid purple;
-      padding-left: 10px;
     }
     .item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       background: #1e1e1e;
-      margin: 0.5rem 0;
-      padding: 1rem;
       border-radius: 8px;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      box-shadow: 0 0 10px #333;
     }
-    .item .name {
-      font-weight: 600;
+    .item h3 {
+      margin-top: 0;
+      color: #ffd700;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .toggle label {
+      font-weight: bold;
+      margin-right: 1rem;
+    }
+    .status-labels {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+    }
+    .status-labels span {
+      margin-right: 10px;
     }
     .switch {
-      display: flex;
-      align-items: center;
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
     }
     .switch input {
-      margin-right: 10px;
-      transform: scale(1.5);
+      opacity: 0;
+      width: 0;
+      height: 0;
     }
-    .summary {
-      background: #1f1f1f;
-      padding: 1rem;
-      margin-top: 2rem;
-      border-radius: 8px;
-    }
-    .summary h3 {
-      color: gold;
-      margin-bottom: 1rem;
-    }
-    .summary p {
-      margin: 0.5rem 0;
-    }
-    .offday-btn {
-      background: red;
-      color: #fff;
-      padding: 0.8rem 1.5rem;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      margin-top: 1rem;
+    .slider {
+      position: absolute;
       cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: black;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #ffd700;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
     }
   </style>
 </head>
 <body>
-  <header>Snapbite™ Admin Panel <br><small style="font-size:14px;color:gray;">No Rules. Just Bite. Repeat</small></header>
-  <div class="container" id="panel">
-    <!-- JS will inject categories and items here -->
+  <header>Snapbite™ Admin Panel</header>
+  <main><div class="item">
+  <h3>Primebite™</h3>
+  <div class="toggle">
+    <div>
+      <div class="status-labels">
+        <span>✅ <strong>Available</strong></span>
+        <span>❌ <strong>Out of Stock</strong></span>
+      </div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="primebite" checked>
+      <span class="slider"></span>
+    </label>
   </div>
-  <div class="container summary" id="summary">
-    <h3>Sales Summary</h3>
-    <p>Total Items Sold: <span id="totalSold">0</span></p>
-    <p>Gross Sales: RM <span id="grossSales">0.00</span></p>
-    <p>Net Profit: RM <span id="netProfit">0.00</span></p>
-    <p>PNL This Month: RM <span id="pnl">0.00</span></p>
-    <button class="offday-btn" onclick="toggleOffday()">Toggle Off Day</button>
-  </div>  <script>
-    const dbUrl = 'https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app/items.json';
+</div>
 
-    const categories = {
-      "Beef Series": ["Primebite", "Beef N' Cheese", "The Fun Guy", "The Fixer"],
-      "Chicken Series": ["Chickbite", "Goldcut", "The Cap Cut", "Stripstack"],
-      "Tex-Mex Series": ["Smoke Beef Taco", "Smokey Chop Taco", "Mix Taco", "Smoke Beef Quesadilla", "Smoke Chicken Quesadilla", "Mix Quesadilla"],
-      "Sausage Series": ["Classic Sausage", "Chickola"],
-      "Snack Series": ["Popcorn Chicken"],
-      "Add-ons": ["Cheese", "Egg", "Mushroom", "Bacon"]
-    };
+<div class="item">
+  <h3>Beef N' Cheese™</h3>
+  <div class="toggle">
+    <div class="status-labels">
+      <span>✅ <strong>Available</strong></span>
+      <span>❌ <strong>Out of Stock</strong></span>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="beefncheese">
+      <span class="slider"></span>
+    </label>
+  </div>
+</div>
 
-    async function loadItems() {
-      const res = await fetch(dbUrl);
-      const data = await res.json();
-      const panel = document.getElementById('panel');
-      panel.innerHTML = '';
-      for (let cat in categories) {
-        const catDiv = document.createElement('div');
-        catDiv.className = 'category';
-        catDiv.innerHTML = `<h2>${cat}</h2>`;
+<!-- Repeat for other menu items -->
 
-        categories[cat].forEach(name => {
-          const itemData = data?.[name] || {};
-          const available = itemData.available !== false;
-          const sold = itemData.sold || 0;
-
-          const itemDiv = document.createElement('div');
-          itemDiv.className = 'item';
-          itemDiv.innerHTML = `
-            <span class="name">${name}</span>
-            <div class="switch">
-              <input type="checkbox" id="${name}" ${available ? 'checked' : ''} onchange="toggleItem('${name}', this.checked)">
-              <label for="${name}">${available ? 'Available' : 'Item 86'}</label>
-            </div>
-            <div class="sold">Sold: ${sold}</div>
-          `;
-          catDiv.appendChild(itemDiv);
-        });
-
-        panel.appendChild(catDiv);
-      }
-      calculateSummary(data);
-    }
-
-    function toggleItem(name, isAvailable) {
-      fetch(`https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app/items/${name}.json`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ available: isAvailable })
-      });
-    }
-
-    function toggleOffday() {
-      alert('Reminder: Manually untick each item if you are off today.');
-    }
-
-    function calculateSummary(data) {
-      let total = 0, gross = 0;
-      const costPerItem = 4.00;
-      for (let key in data) {
-        const sold = data[key].sold || 0;
-        total += sold;
-        gross += sold * (data[key].price || 10);
-      }
-      const net = gross - (total * costPerItem);
-      document.getElementById('totalSold').textContent = total;
-      document.getElementById('grossSales').textContent = gross.toFixed(2);
-      document.getElementById('netProfit').textContent = net.toFixed(2);
-      document.getElementById('pnl').textContent = net.toFixed(2);
-    }
-
-    loadItems();
-  </script></body>
+  </main>
+</body>
 </html>
