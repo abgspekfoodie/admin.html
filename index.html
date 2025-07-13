@@ -1,76 +1,112 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snapbite™ Admin Panel</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snapbite Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
-      color: #fff;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #0d0d0d;
+      color: #ffd700;
+    }
+    header {
+      background: linear-gradient(90deg, #1f1f1f, #000);
       padding: 20px;
-    }
-    h1 {
-      color: gold;
       text-align: center;
-      margin-bottom: 30px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      border-bottom: 2px solid #ffd700;
     }
-    .item {
-      background: #1c1c2e;
-      padding: 15px;
-      margin-bottom: 10px;
+    .container {
+      padding: 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+    h2 {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      color: #fff;
+    }
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      padding: 1.5rem;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+      margin-top: 1rem;
     }
-    .item h3 {
-      margin: 0 0 10px 0;
-    }
-    label {
+    .card label {
       display: block;
-      margin-bottom: 5px;
+      margin: 10px 0 5px;
+      color: #ccc;
     }
-    input[type="checkbox"] {
-      transform: scale(1.2);
-      margin-right: 10px;
-    }
-    .toggle-container {
+    .toggle {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin: 0.5rem 0;
+    }
+    .toggle input[type="checkbox"] {
+      transform: scale(1.5);
     }
     .stats {
-      text-align: center;
-      margin-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
     }
-    .stats h2 {
-      color: #ffcc00;
+    .stat-box {
+      background: #262626;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #333;
+      color: #ffd700;
     }
-    .offday-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: crimson;
+    .btn {
+      background: #ffd700;
+      color: #000;
+      padding: 0.8rem 1.5rem;
+      font-weight: bold;
       border: none;
-      color: white;
-      font-size: 16px;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
+      margin-top: 1rem;
+    }
+    .btn:hover {
+      background: #e6c200;
     }
   </style>
 </head>
 <body>
-  <h1>Snapbite™ Admin Panel</h1>  <div id="menuItems"></div>  <div class="stats">
-    <h2>📈 Sales Overview</h2>
-    <p>Daily Sales: <span id="dailySales">0</span></p>
-    <p>Weekly Sales: <span id="weeklySales">0</span></p>
-    <p>Monthly Sales: <span id="monthlySales">0</span></p>
-    <p>Total Items Sold: <span id="totalSold">0</span></p>
-  </div><button class="offday-btn" onclick="toggleOffday()">Toggle Offday</button>
+  <header>Snapbite™ Admin Panel <br/><small style="font-size:0.9rem; color:#bbb;">No Rules. Just Bite. Repeat</small></header>
+
+  <div class="container">
+    <h2>Menu Availability</h2>
+    <div class="card" id="menuStatus"></div>
+
+    <h2>Sales Summary</h2>
+    <div class="stats">
+      <div class="stat-box">Total Items Sold: <span id="totalSold">0</span></div>
+      <div class="stat-box">Gross Sales: RM <span id="grossSales">0.00</span></div>
+      <div class="stat-box">Net Profit: RM <span id="netProfit">0.00</span></div>
+    </div>
+
+    <h2>Store Status</h2>
+    <div class="card">
+      <label>Off Day Toggle</label>
+      <label class="toggle">
+        <span>Closed Today</span>
+        <input type="checkbox" id="offDayToggle" />
+      </label>
+      <button class="btn" onclick="saveStatus()">Save Status</button>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+    import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
@@ -87,56 +123,62 @@
     const db = getDatabase(app);
 
     const menuRef = ref(db, 'menu');
-    const salesRef = ref(db, 'sales');
-    const offdayRef = ref(db, 'offday');
+    const soldRef = ref(db, 'sales');
+    const offDayRef = ref(db, 'offday');
 
-    const menuItemsDiv = document.getElementById('menuItems');
+    const menuStatusDiv = document.getElementById('menuStatus');
+    const totalSoldSpan = document.getElementById('totalSold');
+    const grossSalesSpan = document.getElementById('grossSales');
+    const netProfitSpan = document.getElementById('netProfit');
+    const offDayToggle = document.getElementById('offDayToggle');
 
-    onValue(menuRef, (snapshot) => {
+    onValue(menuRef, snapshot => {
       const data = snapshot.val();
-      menuItemsDiv.innerHTML = '';
-      let totalSold = 0;
-
+      menuStatusDiv.innerHTML = '';
       for (const key in data) {
         const item = data[key];
-        totalSold += item.sold || 0;
-
+        const isAvailable = item.available;
         const div = document.createElement('div');
-        div.className = 'item';
+        div.classList.add('toggle');
         div.innerHTML = `
-          <h3>${key}</h3>
-          <div class="toggle-container">
-            <label><input type="checkbox" ${item.available ? 'checked' : ''} onchange="toggleAvailability('${key}', this.checked)"> Available</label>
-            <label><input type="checkbox" ${item.outofstock ? 'checked' : ''} onchange="toggleOutOfStock('${key}', this.checked)"> Out of Stock</label>
-          </div>
-          <p>Sold: ${item.sold || 0}</p>
+          <span>${item.name}</span>
+          <input type="checkbox" data-id="${key}" ${isAvailable ? 'checked' : ''}>
         `;
-        menuItemsDiv.appendChild(div);
+        menuStatusDiv.appendChild(div);
       }
-
-      document.getElementById('totalSold').textContent = totalSold;
     });
 
-    onValue(salesRef, (snapshot) => {
+    onValue(soldRef, snapshot => {
       const data = snapshot.val();
-      document.getElementById('dailySales').textContent = data.daily || 0;
-      document.getElementById('weeklySales').textContent = data.weekly || 0;
-      document.getElementById('monthlySales').textContent = data.monthly || 0;
+      let total = 0;
+      let gross = 0;
+      let net = 0;
+      for (const id in data) {
+        total += data[id].qty;
+        gross += data[id].qty * data[id].price;
+        net += data[id].qty * (data[id].price - data[id].cost);
+      }
+      totalSoldSpan.textContent = total;
+      grossSalesSpan.textContent = gross.toFixed(2);
+      netProfitSpan.textContent = net.toFixed(2);
     });
 
-    window.toggleAvailability = function (key, state) {
-      update(ref(db, `menu/${key}`), { available: state });
-    };
+    onValue(offDayRef, snapshot => {
+      offDayToggle.checked = snapshot.val();
+    });
 
-    window.toggleOutOfStock = function (key, state) {
-      update(ref(db, `menu/${key}`), { outofstock: state });
-    };
+    menuStatusDiv.addEventListener('change', (e) => {
+      const id = e.target.getAttribute('data-id');
+      if (!id) return;
+      const available = e.target.checked;
+      update(ref(db, 'menu/' + id), { available });
+    });
 
-    window.toggleOffday = function () {
-      onValue(offdayRef, (snap) => {
-        const isOff = snap.val();
-        update(offdayRef, isOff ? false : true);
-      }, { onlyOnce: true });
-    };
-  </script></body>
+    window.saveStatus = () => {
+      set(offDayRef, offDayToggle.checked);
+      alert("Status updated.");
+    }
+  </script>
+</body>
 </html>
+
