@@ -2,116 +2,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snapbite™ Admin Panel</title>
+  <title>Snapbite Admin Panel</title>
   <style>
     body {
-      background: linear-gradient(to right, #1a1a1a, #2c2c2c);
-      font-family: 'Poppins', sans-serif;
-      color: #ffd700;
       margin: 0;
       padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #121212;
+      color: #fff;
     }
     header {
-      background: #000;
-      color: #ffd700;
-      padding: 1rem;
+      background: linear-gradient(to right, #9c27b0, #ff9800);
+      padding: 20px;
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 24px;
       font-weight: bold;
-      border-bottom: 2px solid #ffd700;
+      color: #fff;
     }
     .container {
-      max-width: 1000px;
-      margin: 2rem auto;
-      padding: 1rem;
-      background: #1a1a1a;
-      border-radius: 8px;
-      box-shadow: 0 0 10px #ffd70055;
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    .section {
+      background: #1e1e1e;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255, 193, 7, 0.2);
     }
     h2 {
-      border-bottom: 1px solid #444;
-      padding-bottom: 0.5rem;
-      margin-top: 2rem;
-      color: #fff;
-    }
-    .item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 0.5rem 0;
-      padding: 0.5rem;
-      background: #222;
-      border-radius: 6px;
-    }
-    .item-name {
-      color: #fff;
+      color: #ffcc00;
+      margin-bottom: 1rem;
     }
     .toggle {
-      transform: scale(1.2);
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+    }
+    .toggle label {
+      margin-left: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background: #ffcc00;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
     }
     .summary {
-      background: #111;
-      padding: 1rem;
-      border-radius: 6px;
-      margin-top: 2rem;
-      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
     }
-    .offday-btn {
-      background: #ffd700;
-      color: #000;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      margin-top: 1rem;
-      cursor: pointer;
-    }
-    .slogan {
+    .summary-item {
+      background: #2a2a2a;
+      padding: 15px;
+      margin: 10px;
+      flex: 1 1 40%;
+      border-radius: 8px;
       text-align: center;
-      margin-top: 2rem;
-      font-size: 1.1rem;
-      color: #aaa;
+    }
+    .summary-item h3 {
+      margin: 0;
+      color: #ffcc00;
+    }
+    .summary-item p {
+      margin: 5px 0 0;
+      font-size: 18px;
+    }
+    footer {
+      text-align: center;
+      color: #888;
+      padding: 1rem;
     }
   </style>
 </head>
 <body>
   <header>Snapbite™ Admin Panel</header>
   <div class="container">
-    <h2>Menu Availability</h2>
-    <div class="item"><span class="item-name">Primebite™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Beef N' Cheese™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">The Fun Guy™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">The Fixer™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Chickbite™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Goldcut™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">The Cap Cut™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Stripstack™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Smoke Beef Taco™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Smokey Chop Taco™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Mix Taco™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Smoke Beef Quesadilla™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Smoke Chicken Quesadilla™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Mix Quesadilla™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Classic Sausage™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Chickola™</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Add-on: Cheese</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Add-on: Egg</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Add-on: Mushroom</span> <input type="checkbox" class="toggle" /></div>
-    <div class="item"><span class="item-name">Add-on: Bacon</span> <input type="checkbox" class="toggle" /></div><button class="offday-btn" onclick="toggleOffDay()">Toggle Off Day</button>
-
-<h2>Sales Summary</h2>
-<div class="summary">
-  <p>Items Sold Today: <strong>0</strong></p>
-  <p>Gross Sales: <strong>RM 0.00</strong></p>
-  <p>Net Sales: <strong>RM 0.00</strong></p>
-  <p>Top Item: <strong>--</strong></p>
+    <div class="section">
+      <h2>Menu Availability</h2>
+      <div class="toggle"><input type="checkbox" id="primebite" checked><label for="primebite">Primebite™</label></div>
+      <div class="toggle"><input type="checkbox" id="beefcheese" checked><label for="beefcheese">Beef N' Cheese™</label></div>
+      <div class="toggle"><input type="checkbox" id="funguy" checked><label for="funguy">The Fun Guy™</label></div>
+      <div class="toggle"><input type="checkbox" id="fixer" checked><label for="fixer">The Fixer™</label></div>
+      <div class="toggle"><input type="checkbox" id="chickbite" checked><label for="chickbite">Chickbite™</label></div>
+      <div class="toggle"><input type="checkbox" id="goldcut" checked><label for="goldcut">Goldcut™</label></div>
+      <div class="toggle"><input type="checkbox" id="capcut" checked><label for="capcut">The Cap Cut™</label></div>
+      <div class="toggle"><input type="checkbox" id="stripstack" checked><label for="stripstack">Stripstack™</label></div>
+      <div class="toggle"><input type="checkbox" id="smoketaco" checked><label for="smoketaco">Smoke Beef Taco™</label></div>
+      <div class="toggle"><input type="checkbox" id="choptaco" checked><label for="choptaco">Smokey Chop Taco™</label></div>
+      <div class="toggle"><input type="checkbox" id="classic" checked><label for="classic">Classic Sausage™</label></div>
+      <div class="toggle"><input type="checkbox" id="chickola" checked><label for="chickola">Chickola™</label></div>
+      <div class="toggle"><input type="checkbox" id="cheese" checked><label for="cheese">Cheese (Add-on)</label></div>
+      <div class="toggle"><input type="checkbox" id="egg" checked><label for="egg">Egg (Add-on)</label></div>
+      <div class="toggle"><input type="checkbox" id="mushroom" checked><label for="mushroom">Mushroom (Add-on)</label></div>
+      <div class="toggle"><input type="checkbox" id="bacon" checked><label for="bacon">Bacon (Add-on)</label></div>
+      <button onclick="markOffDay()">Set Today as Off-Day</button>
+    </div><div class="section">
+  <h2>Sales Summary</h2>
+  <div class="summary">
+    <div class="summary-item">
+      <h3>Total Orders</h3>
+      <p id="totalOrders">0</p>
+    </div>
+    <div class="summary-item">
+      <h3>Gross Sales (RM)</h3>
+      <p id="grossSales">0.00</p>
+    </div>
+    <div class="summary-item">
+      <h3>Net Profit (RM)</h3>
+      <p id="netProfit">0.00</p>
+    </div>
+    <div class="summary-item">
+      <h3>Top Seller</h3>
+      <p id="topSeller">-</p>
+    </div>
+  </div>
 </div>
 
   </div>
-  <div class="slogan">No Rules. Just Bite. Repeat.</div>
+  <footer>No Rules. Just Bite. Repeat.</footer>
   <script>
-    function toggleOffDay() {
-      alert('Off day toggled! (Integrate Firebase to save state)');
+    function markOffDay() {
+      alert("Today's marked as off-day. Orders are disabled.");
     }
   </script>
 </body>
