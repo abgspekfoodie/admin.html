@@ -5,106 +5,81 @@
   <title>Snapbite Admin Panel</title>
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #121212;
-      color: #f1c40f;
-      margin: 0;
+      background: #0f0f0f;
+      color: #f5f5f5;
+      font-family: 'Segoe UI', sans-serif;
       padding: 2rem;
     }
     h1 {
+      color: gold;
       text-align: center;
-      color: #f39c12;
+    }
+    .section {
+      margin-bottom: 2rem;
     }
     .category {
-      margin-bottom: 2rem;
-      background: #1e1e1e;
+      margin-bottom: 1rem;
+      background: #1a1a1a;
+      border-radius: 8px;
       padding: 1rem;
-      border-radius: 10px;
     }
     .item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #333;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      background: #292929;
+      border-radius: 5px;
     }
-    label {
+    .item label {
       flex: 1;
     }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 24px;
+    .item input[type="checkbox"] {
+      transform: scale(1.2);
     }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
+    .status-bar {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 24px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 2px;
-      bottom: 2px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: #f1c40f;
-    }
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
-    #summary {
-      background: #2c2c2c;
+    .status-bar div {
+      background: #1f1f1f;
       padding: 1rem;
-      border-radius: 10px;
-      margin-top: 2rem;
-    }
-    .off-day-toggle {
-      margin-top: 2rem;
+      border-radius: 8px;
+      flex: 1;
       text-align: center;
     }
-    .off-day-toggle button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      font-weight: bold;
-      background-color: #f1c40f;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+    .offday-toggle {
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .offday-toggle input {
+      transform: scale(1.5);
+      margin-left: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>Snapbite™ Admin Panel</h1>
-  <div id="menu"></div>
-  <div class="off-day-toggle">
-    <button id="offDayToggle">Toggle Off Day</button>
-  </div>
-  <div id="summary">
-    <h2>Sales Summary</h2>
-    <p>Total Items Sold: <span id="totalSold">0</span></p>
-    <p>Gross Sales: RM <span id="grossSales">0.00</span></p>
-    <p>Estimated Net Profit: RM <span id="netProfit">0.00</span></p>
-  </div>  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+  <h1>Snapbite™ Admin Panel</h1>  <div class="status-bar">
+    <div>
+      <strong>Today's Sales</strong>
+      <div id="todaySales">RM0.00</div>
+    </div>
+    <div>
+      <strong>This Week</strong>
+      <div id="weekSales">RM0.00</div>
+    </div>
+    <div>
+      <strong>This Month</strong>
+      <div id="monthSales">RM0.00</div>
+    </div>
+  </div>  <div class="offday-toggle">
+    <label><strong>Off Day:</strong></label>
+    <input type="checkbox" id="offdayToggle" />
+  </div>  <div id="menuPanel" class="section"></div>  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
@@ -119,67 +94,52 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const menuContainer = document.getElementById('menu');
-    const totalSold = document.getElementById('totalSold');
-    const grossSales = document.getElementById('grossSales');
-    const netProfit = document.getElementById('netProfit');
-    const profitMargin = 0.3;
+    const menuPanel = document.getElementById('menuPanel');
+    const offdayToggle = document.getElementById('offdayToggle');
 
-    function renderMenu(data) {
-      menuContainer.innerHTML = '';
-      let total = 0;
-      let gross = 0;
-      Object.keys(data).forEach(category => {
+    const renderMenu = (data) => {
+      menuPanel.innerHTML = '';
+      Object.entries(data.menu).forEach(([category, items]) => {
         const section = document.createElement('div');
         section.className = 'category';
-        const title = document.createElement('h2');
-        title.textContent = category;
-        section.appendChild(title);
+        section.innerHTML = `<h3>${category.toUpperCase()}</h3>`;
 
-        Object.keys(data[category]).forEach(item => {
-          const itemData = data[category][item];
-          const row = document.createElement('div');
-          row.className = 'item';
+        Object.entries(items).forEach(([key, item]) => {
+          const div = document.createElement('div');
+          div.className = 'item';
 
           const label = document.createElement('label');
-          label.textContent = `${item}`;
-          const toggle = document.createElement('label');
-          toggle.className = 'switch';
+          label.textContent = item.name;
+
           const checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
-          checkbox.checked = itemData.available;
+          checkbox.checked = item.available;
           checkbox.addEventListener('change', () => {
-            update(ref(db, `${category}/${item}`), { available: checkbox.checked });
+            update(ref(db, `menu/${category}/${key}`), { available: checkbox.checked });
           });
-          const slider = document.createElement('span');
-          slider.className = 'slider';
-          toggle.appendChild(checkbox);
-          toggle.appendChild(slider);
 
-          row.appendChild(label);
-          row.appendChild(toggle);
-          section.appendChild(row);
-
-          total += itemData.sold || 0;
-          gross += (itemData.sold || 0) * (itemData.price || 0);
+          div.appendChild(label);
+          div.appendChild(checkbox);
+          section.appendChild(div);
         });
 
-        menuContainer.appendChild(section);
+        menuPanel.appendChild(section);
       });
-
-      totalSold.textContent = total;
-      grossSales.textContent = gross.toFixed(2);
-      netProfit.textContent = (gross * profitMargin).toFixed(2);
-    }
+    };
 
     onValue(ref(db), (snapshot) => {
       const data = snapshot.val();
-      if (data) renderMenu(data);
+      if (data) {
+        renderMenu(data);
+        offdayToggle.checked = data.offday || false;
+        document.getElementById("todaySales").textContent = `RM${data.sales?.dailyTotal?.toFixed(2) || "0.00"}`;
+        document.getElementById("weekSales").textContent = `RM${data.sales?.weeklyTotal?.toFixed(2) || "0.00"}`;
+        document.getElementById("monthSales").textContent = `RM${data.sales?.monthlyTotal?.toFixed(2) || "0.00"}`;
+      }
     });
 
-    document.getElementById('offDayToggle').addEventListener('click', () => {
-      update(ref(db), { offDay: true }); // or toggle logic
-      alert('Off Day set!');
+    offdayToggle.addEventListener('change', () => {
+      set(ref(db, 'offday'), offdayToggle.checked);
     });
   </script></body>
 </html>
