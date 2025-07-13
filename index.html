@@ -1,184 +1,168 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Snapbite Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snapbite™ Admin Panel</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background: #0d0d0d;
-      color: #ffd700;
+      background-color: #121212;
+      color: #f5f5f5;
     }
     header {
-      background: linear-gradient(90deg, #1f1f1f, #000);
-      padding: 20px;
+      background-color: #1f1f1f;
+      color: gold;
+      padding: 1rem 2rem;
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       font-weight: 600;
-      border-bottom: 2px solid #ffd700;
     }
     .container {
       padding: 2rem;
-      max-width: 1000px;
+      max-width: 1200px;
       margin: auto;
     }
-    h2 {
-      margin-top: 2rem;
-      font-size: 1.2rem;
-      color: #fff;
+    .category {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid #333;
+      padding-bottom: 1rem;
     }
-    .card {
-      background: #1a1a1a;
-      border: 1px solid #333;
-      padding: 1.5rem;
-      border-radius: 10px;
-      margin-top: 1rem;
+    .category h2 {
+      color: #ffcc00;
+      border-left: 5px solid purple;
+      padding-left: 10px;
     }
-    .card label {
-      display: block;
-      margin: 10px 0 5px;
-      color: #ccc;
-    }
-    .toggle {
+    .item {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: #1e1e1e;
       margin: 0.5rem 0;
-    }
-    .toggle input[type="checkbox"] {
-      transform: scale(1.5);
-    }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-    .stat-box {
-      background: #262626;
       padding: 1rem;
       border-radius: 8px;
-      border: 1px solid #333;
-      color: #ffd700;
     }
-    .btn {
-      background: #ffd700;
-      color: #000;
-      padding: 0.8rem 1.5rem;
-      font-weight: bold;
-      border: none;
+    .item .name {
+      font-weight: 600;
+    }
+    .switch {
+      display: flex;
+      align-items: center;
+    }
+    .switch input {
+      margin-right: 10px;
+      transform: scale(1.5);
+    }
+    .summary {
+      background: #1f1f1f;
+      padding: 1rem;
+      margin-top: 2rem;
       border-radius: 8px;
-      cursor: pointer;
-      margin-top: 1rem;
     }
-    .btn:hover {
-      background: #e6c200;
+    .summary h3 {
+      color: gold;
+      margin-bottom: 1rem;
+    }
+    .summary p {
+      margin: 0.5rem 0;
+    }
+    .offday-btn {
+      background: red;
+      color: #fff;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      margin-top: 1rem;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <header>Snapbite™ Admin Panel <br/><small style="font-size:0.9rem; color:#bbb;">No Rules. Just Bite. Repeat</small></header>
-
-  <div class="container">
-    <h2>Menu Availability</h2>
-    <div class="card" id="menuStatus"></div>
-
-    <h2>Sales Summary</h2>
-    <div class="stats">
-      <div class="stat-box">Total Items Sold: <span id="totalSold">0</span></div>
-      <div class="stat-box">Gross Sales: RM <span id="grossSales">0.00</span></div>
-      <div class="stat-box">Net Profit: RM <span id="netProfit">0.00</span></div>
-    </div>
-
-    <h2>Store Status</h2>
-    <div class="card">
-      <label>Off Day Toggle</label>
-      <label class="toggle">
-        <span>Closed Today</span>
-        <input type="checkbox" id="offDayToggle" />
-      </label>
-      <button class="btn" onclick="saveStatus()">Save Status</button>
-    </div>
+  <header>Snapbite™ Admin Panel <br><small style="font-size:14px;color:gray;">No Rules. Just Bite. Repeat</small></header>
+  <div class="container" id="panel">
+    <!-- JS will inject categories and items here -->
   </div>
+  <div class="container summary" id="summary">
+    <h3>Sales Summary</h3>
+    <p>Total Items Sold: <span id="totalSold">0</span></p>
+    <p>Gross Sales: RM <span id="grossSales">0.00</span></p>
+    <p>Net Profit: RM <span id="netProfit">0.00</span></p>
+    <p>PNL This Month: RM <span id="pnl">0.00</span></p>
+    <button class="offday-btn" onclick="toggleOffday()">Toggle Off Day</button>
+  </div>  <script>
+    const dbUrl = 'https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app/items.json';
 
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
-      authDomain: "snapbite-admin.firebaseapp.com",
-      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "snapbite-admin",
-      storageBucket: "snapbite-admin.appspot.com",
-      messagingSenderId: "146625734660",
-      appId: "1:146625734660:web:23ada593e4818ed7332d51",
-      measurementId: "G-7RR3W1WJYK"
+    const categories = {
+      "Beef Series": ["Primebite", "Beef N' Cheese", "The Fun Guy", "The Fixer"],
+      "Chicken Series": ["Chickbite", "Goldcut", "The Cap Cut", "Stripstack"],
+      "Tex-Mex Series": ["Smoke Beef Taco", "Smokey Chop Taco", "Mix Taco", "Smoke Beef Quesadilla", "Smoke Chicken Quesadilla", "Mix Quesadilla"],
+      "Sausage Series": ["Classic Sausage", "Chickola"],
+      "Snack Series": ["Popcorn Chicken"],
+      "Add-ons": ["Cheese", "Egg", "Mushroom", "Bacon"]
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    async function loadItems() {
+      const res = await fetch(dbUrl);
+      const data = await res.json();
+      const panel = document.getElementById('panel');
+      panel.innerHTML = '';
+      for (let cat in categories) {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'category';
+        catDiv.innerHTML = `<h2>${cat}</h2>`;
 
-    const menuRef = ref(db, 'menu');
-    const soldRef = ref(db, 'sales');
-    const offDayRef = ref(db, 'offday');
+        categories[cat].forEach(name => {
+          const itemData = data?.[name] || {};
+          const available = itemData.available !== false;
+          const sold = itemData.sold || 0;
 
-    const menuStatusDiv = document.getElementById('menuStatus');
-    const totalSoldSpan = document.getElementById('totalSold');
-    const grossSalesSpan = document.getElementById('grossSales');
-    const netProfitSpan = document.getElementById('netProfit');
-    const offDayToggle = document.getElementById('offDayToggle');
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'item';
+          itemDiv.innerHTML = `
+            <span class="name">${name}</span>
+            <div class="switch">
+              <input type="checkbox" id="${name}" ${available ? 'checked' : ''} onchange="toggleItem('${name}', this.checked)">
+              <label for="${name}">${available ? 'Available' : 'Item 86'}</label>
+            </div>
+            <div class="sold">Sold: ${sold}</div>
+          `;
+          catDiv.appendChild(itemDiv);
+        });
 
-    onValue(menuRef, snapshot => {
-      const data = snapshot.val();
-      menuStatusDiv.innerHTML = '';
-      for (const key in data) {
-        const item = data[key];
-        const isAvailable = item.available;
-        const div = document.createElement('div');
-        div.classList.add('toggle');
-        div.innerHTML = `
-          <span>${item.name}</span>
-          <input type="checkbox" data-id="${key}" ${isAvailable ? 'checked' : ''}>
-        `;
-        menuStatusDiv.appendChild(div);
+        panel.appendChild(catDiv);
       }
-    });
-
-    onValue(soldRef, snapshot => {
-      const data = snapshot.val();
-      let total = 0;
-      let gross = 0;
-      let net = 0;
-      for (const id in data) {
-        total += data[id].qty;
-        gross += data[id].qty * data[id].price;
-        net += data[id].qty * (data[id].price - data[id].cost);
-      }
-      totalSoldSpan.textContent = total;
-      grossSalesSpan.textContent = gross.toFixed(2);
-      netProfitSpan.textContent = net.toFixed(2);
-    });
-
-    onValue(offDayRef, snapshot => {
-      offDayToggle.checked = snapshot.val();
-    });
-
-    menuStatusDiv.addEventListener('change', (e) => {
-      const id = e.target.getAttribute('data-id');
-      if (!id) return;
-      const available = e.target.checked;
-      update(ref(db, 'menu/' + id), { available });
-    });
-
-    window.saveStatus = () => {
-      set(offDayRef, offDayToggle.checked);
-      alert("Status updated.");
+      calculateSummary(data);
     }
-  </script>
-</body>
-</html>
 
+    function toggleItem(name, isAvailable) {
+      fetch(`https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app/items/${name}.json`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ available: isAvailable })
+      });
+    }
+
+    function toggleOffday() {
+      alert('Reminder: Manually untick each item if you are off today.');
+    }
+
+    function calculateSummary(data) {
+      let total = 0, gross = 0;
+      const costPerItem = 4.00;
+      for (let key in data) {
+        const sold = data[key].sold || 0;
+        total += sold;
+        gross += sold * (data[key].price || 10);
+      }
+      const net = gross - (total * costPerItem);
+      document.getElementById('totalSold').textContent = total;
+      document.getElementById('grossSales').textContent = gross.toFixed(2);
+      document.getElementById('netProfit').textContent = net.toFixed(2);
+      document.getElementById('pnl').textContent = net.toFixed(2);
+    }
+
+    loadItems();
+  </script></body>
+</html>
