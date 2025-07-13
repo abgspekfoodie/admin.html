@@ -1,52 +1,53 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Snapbite™ Admin Panel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snapbite Admin Panel</title>
   <style>
-    body { font-family: 'Poppins', sans-serif; background: #1a1a1a; color: #fff; margin: 0; padding: 2rem; }
-    h1 { color: #ff9500; text-align: center; }
-    .container { max-width: 1000px; margin: auto; background: #2a2a2a; padding: 2rem; border-radius: 10px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
-    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #444; }
-    th { background: #333; color: #ff9500; }
-    input[type=checkbox] { transform: scale(1.2); }
-    .controls { margin-top: 2rem; text-align: right; }
-    .controls button { background: #ff9500; color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-    .summary { margin-top: 2rem; background: #111; padding: 1rem; border-radius: 8px; }
-    .summary h3 { margin-top: 0; color: #ff9500; }
+    body { font-family: 'Poppins', sans-serif; background: #121212; color: #fff; margin: 0; padding: 2rem; }
+    h1 { text-align: center; color: #ffa500; }
+    .menu-table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
+    .menu-table th, .menu-table td {
+      padding: 12px; border: 1px solid #333; text-align: left;
+    }
+    .menu-table th { background: #222; }
+    .toggle-btn {
+      padding: 6px 12px; background: #ffa500; color: #000;
+      border: none; border-radius: 4px; cursor: pointer;
+    }
+    .profit-box {
+      margin-top: 2rem;
+      background: #1e1e1e;
+      padding: 1rem;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
   <h1>Snapbite™ Admin Panel</h1>
-  <div class="container">
-    <table>
+  <div id="menu-section">
+    <table class="menu-table">
       <thead>
         <tr>
-          <th>Menu Item</th>
-          <th>Available</th>
-          <th>Cost (RM)</th>
+          <th>Name</th>
+          <th>Category</th>
           <th>Price (RM)</th>
-          <th>Profit (RM)</th>
+          <th>Cost (RM)</th>
+          <th>Available</th>
+          <th>Toggle</th>
         </tr>
       </thead>
-      <tbody id="menuTable">
-        <!-- Dynamic rows will be inserted here -->
+      <tbody id="menu-list">
+        <!-- JS populated rows -->
       </tbody>
-    </table><div class="summary">
-  <h3>Summary</h3>
-  <p><strong>Total Cost:</strong> <span id="totalCost">RM0.00</span></p>
-  <p><strong>Total Sales:</strong> <span id="totalSales">RM0.00</span></p>
-  <p><strong>Estimated Gross Profit:</strong> <span id="grossProfit">RM0.00</span></p>
-</div>
-
-<div class="controls">
-  <button onclick="saveChanges()">Save Changes</button>
-</div>
-
-  </div>  <!-- Firebase SDK -->  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+    </table>
+  </div>  <div class="profit-box">
+    <h3>Profit Summary</h3>
+    <p><strong>Gross Profit:</strong> RM <span id="gross-profit">0.00</span></p>
+    <p><strong>Net Profit (30% margin):</strong> RM <span id="net-profit">0.00</span></p>
+  </div>  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
@@ -62,59 +63,42 @@
     const db = getDatabase(app);
 
     const menuRef = ref(db, 'menu');
+    const menuList = document.getElementById('menu-list');
+    let grossProfit = 0;
+
     onValue(menuRef, (snapshot) => {
-      const menuData = snapshot.val();
-      const tbody = document.getElementById('menuTable');
-      tbody.innerHTML = '';
-      let totalCost = 0, totalSales = 0;
+      const data = snapshot.val();
+      menuList.innerHTML = '';
+      grossProfit = 0;
 
-      Object.keys(menuData).forEach(key => {
-        const item = menuData[key];
-        const row = document.createElement('tr');
-
-        const nameTd = document.createElement('td');
-        nameTd.textContent = item.name;
-
-        const availTd = document.createElement('td');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = item.available;
-        checkbox.dataset.key = key;
-        availTd.appendChild(checkbox);
-
-        const costTd = document.createElement('td');
-        costTd.textContent = `RM${parseFloat(item.cost).toFixed(2)}`;
-        totalCost += parseFloat(item.cost);
-
-        const priceTd = document.createElement('td');
-        priceTd.textContent = `RM${parseFloat(item.price).toFixed(2)}`;
-        totalSales += parseFloat(item.price);
-
-        const profitTd = document.createElement('td');
+      for (let key in data) {
+        const item = data[key];
         const profit = parseFloat(item.price) - parseFloat(item.cost);
-        profitTd.textContent = `RM${profit.toFixed(2)}`;
+        grossProfit += profit;
 
-        row.appendChild(nameTd);
-        row.appendChild(availTd);
-        row.appendChild(costTd);
-        row.appendChild(priceTd);
-        row.appendChild(profitTd);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.name}</td>
+          <td>${item.category || '-'}</td>
+          <td>${parseFloat(item.price).toFixed(2)}</td>
+          <td>${parseFloat(item.cost).toFixed(2)}</td>
+          <td>${item.available ? 'Yes' : 'No'}</td>
+          <td><button class="toggle-btn" data-id="${key}" data-status="${item.available}">${item.available ? 'Disable' : 'Enable'}</button></td>
+        `;
+        menuList.appendChild(row);
+      }
 
-        tbody.appendChild(row);
-      });
-
-      document.getElementById('totalCost').textContent = `RM${totalCost.toFixed(2)}`;
-      document.getElementById('totalSales').textContent = `RM${totalSales.toFixed(2)}`;
-      document.getElementById('grossProfit').textContent = `RM${(totalSales - totalCost).toFixed(2)}`;
+      document.getElementById('gross-profit').innerText = grossProfit.toFixed(2);
+      document.getElementById('net-profit').innerText = (grossProfit * 0.3).toFixed(2);
     });
 
-    window.saveChanges = () => {
-      const checkboxes = document.querySelectorAll('input[type=checkbox]');
-      checkboxes.forEach(cb => {
-        const itemRef = ref(db, `menu/${cb.dataset.key}`);
-        update(itemRef, { available: cb.checked });
-      });
-      alert('Changes saved!');
-    }
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('toggle-btn')) {
+        const id = e.target.dataset.id;
+        const current = e.target.dataset.status === 'true';
+        const updateRef = ref(db, 'menu/' + id);
+        update(updateRef, { available: !current });
+      }
+    });
   </script></body>
 </html>
