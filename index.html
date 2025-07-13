@@ -1,158 +1,159 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Snapbite Admin</title>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 2rem;
-            background-color: #2f2f2f;
-            color: #fff;
-        }
-        h1 {
-            color: #ff9500;
-            text-align: center;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        .menu-item, .status-toggle, .offday-toggle, .sales-summary, .button {
-            margin: 1rem 0;
-        }
-        .menu-item, .sales-summary {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-        }
-        .button {
-            padding: 12px 24px;
-            background-color: #ff9500;
-            color: #000;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        select, input {
-            width: 100%;
-            padding: 10px;
-            background-color: #444;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-        }
-        .menu-item label, .sales-summary label {
-            font-weight: 600;
-        }
-        .status-toggle, .offday-toggle {
-            margin-top: 1rem;
-        }
-        .status-toggle label, .offday-toggle label {
-            display: block;
-            margin: 0.5rem 0;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snapbite Admin Panel</title>
+  <style>
+    body {
+      background: #0e0e0e;
+      color: #ffd700;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #fff;
+    }
+    .menu-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      padding: 1.5rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+    }
+    .menu-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #fff;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      margin: 0.5rem 0;
+    }
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    .offday {
+      background: #2a2a2a;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    button {
+      background-color: #ffd700;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .total-sales {
+      background: #222;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 2rem;
+    }
+    .total-sales h3 {
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body>
-    <h1>Snapbite™ Admin Dashboard</h1>
-    <div class="container">
-        <!-- Toggle Available/Item 86 -->
-        <div class="status-toggle">
-            <label for="menu-status">Menu Availability Status:</label>
-            <select id="menu-status">
-                <option value="available">Available</option>
-                <option value="item-86">Item 86</option>
-            </select>
-        </div>
+  <h1>Snapbite™ Admin Panel</h1>
+  <div class="offday">
+    <label><input type="checkbox" id="offdayToggle"> Off Day Mode</label>
+  </div>
+  <div id="menuContainer"></div>
+  <div class="total-sales">
+    <h3>Sales Summary</h3>
+    <p id="totalItems">Total Items Sold: 0</p>
+    <p id="grossSales">Gross Sales: RM 0.00</p>
+    <p id="netSales">Net Profit: RM 0.00</p>
+  </div>  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
+      authDomain: "snapbite-admin.firebaseapp.com",
+      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "snapbite-admin",
+      storageBucket: "snapbite-admin.appspot.com",
+      messagingSenderId: "146625734660",
+      appId: "1:146625734660:web:23ada593e4818ed7332d51"
+    };
 
-        <!-- Off Day Toggle -->
-        <div class="offday-toggle">
-            <label for="offday-status">Off Day:</label>
-            <input type="checkbox" id="offday-status">
-        </div>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        <!-- Sales Summary -->
-        <div class="sales-summary">
-            <div><label>Total Sales: RM <span id="total-sales">0.00</span></label></div>
-            <div><label>Gross Profit: RM <span id="gross-profit">0.00</span></label></div>
-            <div><label>Net Profit: RM <span id="net-profit">0.00</span></label></div>
-        </div>
+    const menuContainer = document.getElementById("menuContainer");
 
-        <!-- Button to Save or Update Data -->
-        <button class="button" id="update-button">Update Sales</button>
-    </div>
+    function renderMenu(data) {
+      menuContainer.innerHTML = '';
+      for (let category in data) {
+        const section = document.createElement("div");
+        section.className = "menu-section";
+        const title = document.createElement("div");
+        title.className = "menu-title";
+        title.innerText = category;
+        section.appendChild(title);
 
-    <script>
-        const databaseURL = "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app/";
-        
-        // Initialize Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
-            authDomain: "snapbite-admin.firebaseapp.com",
-            databaseURL: databaseURL,
-            projectId: "snapbite-admin",
-            storageBucket: "snapbite-admin.firebasestorage.app",
-            messagingSenderId: "146625734660",
-            appId: "1:146625734660:web:23ada593e4818ed7332d51",
-            measurementId: "G-7RR3W1WJYK"
-        };
+        for (let key in data[category]) {
+          const item = data[category][key];
+          const label = document.createElement("label");
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = item.available;
+          checkbox.addEventListener("change", () => {
+            db.ref(`menu/${category}/${key}/available`).set(checkbox.checked);
+          });
+          label.appendChild(checkbox);
+          label.appendChild(document.createTextNode(`${item.name}`));
+          section.appendChild(label);
+        }
+        menuContainer.appendChild(section);
+      }
+    }
 
-        // Firebase initialization
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    function loadMenu() {
+      db.ref("menu").on("value", (snapshot) => {
+        const data = snapshot.val();
+        if (data) renderMenu(data);
+      });
+    }
 
-        // Fetch menu data
-        db.ref('menu').on('value', snapshot => {
-            const menuData = snapshot.val();
-            if (menuData) {
-                let totalSales = 0;
-                let grossProfit = 0;
-                let netProfit = 0;
+    const offdayToggle = document.getElementById("offdayToggle");
+    offdayToggle.addEventListener("change", () => {
+      db.ref("settings/offday").set(offdayToggle.checked);
+    });
 
-                // Update menu availability status and sales summary
-                Object.entries(menuData).forEach(([menuName, menuDetails]) => {
-                    const { price, available, sales } = menuDetails;
+    db.ref("settings/offday").on("value", (snap) => {
+      offdayToggle.checked = snap.val() || false;
+    });
 
-                    totalSales += price * sales;
-                    grossProfit += (price * sales) - (menuDetails.cost * sales);
-                    netProfit += grossProfit - (sales * menuDetails.operationalCosts);
-
-                    const menuItemDiv = document.createElement('div');
-                    menuItemDiv.classList.add('menu-item');
-                    menuItemDiv.innerHTML = `
-                        <label>${menuName} (${available ? 'Available' : 'Item 86'})</label>
-                        <div>Sold: ${sales}</div>
-                    `;
-                    document.body.appendChild(menuItemDiv);
-                });
-
-                // Update sales summary
-                document.getElementById("total-sales").textContent = totalSales.toFixed(2);
-                document.getElementById("gross-profit").textContent = grossProfit.toFixed(2);
-                document.getElementById("net-profit").textContent = netProfit.toFixed(2);
-            }
+    // Sales Summary Example Calculation
+    db.ref("sales").on("value", (snapshot) => {
+      let gross = 0;
+      let net = 0;
+      let total = 0;
+      snapshot.forEach(catSnap => {
+        catSnap.forEach(itemSnap => {
+          const item = itemSnap.val();
+          total += item.sold || 0;
+          gross += item.totalSales || 0;
+          net += item.profit || 0;
         });
+      });
+      document.getElementById("totalItems").innerText = `Total Items Sold: ${total}`;
+      document.getElementById("grossSales").innerText = `Gross Sales: RM ${gross.toFixed(2)}`;
+      document.getElementById("netSales").innerText = `Net Profit: RM ${net.toFixed(2)}`;
+    });
 
-        // Handle toggle and update button actions
-        document.getElementById("update-button").addEventListener("click", () => {
-            const selectedStatus = document.getElementById("menu-status").value;
-            const isOffDay = document.getElementById("offday-status").checked;
-
-            // Update Firebase with changes
-            db.ref('settings').update({
-                menuStatus: selectedStatus,
-                offDay: isOffDay
-            });
-
-            alert("Data updated successfully!");
-        });
-    </script>
-</body>
+    loadMenu();
+  </script></body>
 </html>
