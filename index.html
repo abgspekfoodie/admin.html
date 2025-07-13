@@ -1,29 +1,76 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snapbite™ Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
-    body { background:#121212; color:#fff; font-family:'Poppins', sans-serif; margin:0; padding:2rem; }
-    h1 { color:#ff9500; text-align:center; margin-bottom:2rem; }
-    .category { margin-bottom:2rem; }
-    .category h2 { border-bottom:1px solid #444; padding-bottom:0.5rem; color:#f0f0f0; }
-    .item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #333; }
-    .item label { font-weight:500; }
-    .toggle { transform:scale(1.2); }
-    .summary { background:#1f1f1f; padding:1rem; border-radius:10px; }
-    .summary h3 { margin-top:0; color:#ff9500; }
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+      color: #fff;
+      padding: 20px;
+    }
+    h1 {
+      color: gold;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .item {
+      background: #1c1c2e;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    }
+    .item h3 {
+      margin: 0 0 10px 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 10px;
+    }
+    .toggle-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .stats {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .stats h2 {
+      color: #ffcc00;
+    }
+    .offday-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: crimson;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <h1>Snapbite™ Admin Control Panel</h1>
-  <div id="panel"></div>
-  <div class="summary">
-    <h3>Sales Summary</h3>
-    <ul id="salesSummary"></ul>
-  </div>  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+  <h1>Snapbite™ Admin Panel</h1>  <div id="menuItems"></div>  <div class="stats">
+    <h2>📈 Sales Overview</h2>
+    <p>Daily Sales: <span id="dailySales">0</span></p>
+    <p>Weekly Sales: <span id="weeklySales">0</span></p>
+    <p>Monthly Sales: <span id="monthlySales">0</span></p>
+    <p>Total Items Sold: <span id="totalSold">0</span></p>
+  </div><button class="offday-btn" onclick="toggleOffday()">Toggle Offday</button>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
@@ -32,75 +79,64 @@
       projectId: "snapbite-admin",
       storageBucket: "snapbite-admin.appspot.com",
       messagingSenderId: "146625734660",
-      appId: "1:146625734660:web:23ada593e4818ed7332d51"
+      appId: "1:146625734660:web:23ada593e4818ed7332d51",
+      measurementId: "G-7RR3W1WJYK"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const categories = {
-      "Beef Series": ["Primebite", "Beef N' Cheese", "The Fun Guy", "The Fixer"],
-      "Chicken Series": ["Chickbite", "Goldcut", "The Cap Cut", "Stripstack"],
-      "Tex-Mex Series": ["Smoke Beef Taco", "Smokey Chop Taco", "Mix Taco", "Smoke Beef Quesadilla", "Smoke Chicken Quesadilla", "Mix Quesadilla"],
-      "Sausage Series": ["Classic Sausage", "Chickola"],
-      "Snacks": ["Popcorn Chicken", "Cheesy Fries", "Hot Bites"]
+    const menuRef = ref(db, 'menu');
+    const salesRef = ref(db, 'sales');
+    const offdayRef = ref(db, 'offday');
+
+    const menuItemsDiv = document.getElementById('menuItems');
+
+    onValue(menuRef, (snapshot) => {
+      const data = snapshot.val();
+      menuItemsDiv.innerHTML = '';
+      let totalSold = 0;
+
+      for (const key in data) {
+        const item = data[key];
+        totalSold += item.sold || 0;
+
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <h3>${key}</h3>
+          <div class="toggle-container">
+            <label><input type="checkbox" ${item.available ? 'checked' : ''} onchange="toggleAvailability('${key}', this.checked)"> Available</label>
+            <label><input type="checkbox" ${item.outofstock ? 'checked' : ''} onchange="toggleOutOfStock('${key}', this.checked)"> Out of Stock</label>
+          </div>
+          <p>Sold: ${item.sold || 0}</p>
+        `;
+        menuItemsDiv.appendChild(div);
+      }
+
+      document.getElementById('totalSold').textContent = totalSold;
+    });
+
+    onValue(salesRef, (snapshot) => {
+      const data = snapshot.val();
+      document.getElementById('dailySales').textContent = data.daily || 0;
+      document.getElementById('weeklySales').textContent = data.weekly || 0;
+      document.getElementById('monthlySales').textContent = data.monthly || 0;
+    });
+
+    window.toggleAvailability = function (key, state) {
+      update(ref(db, `menu/${key}`), { available: state });
     };
 
-    function renderPanel(data, sales) {
-      const panel = document.getElementById("panel");
-      panel.innerHTML = "";
+    window.toggleOutOfStock = function (key, state) {
+      update(ref(db, `menu/${key}`), { outofstock: state });
+    };
 
-      for (const [category, items] of Object.entries(categories)) {
-        const catDiv = document.createElement("div");
-        catDiv.className = "category";
-        const title = document.createElement("h2");
-        title.textContent = category;
-        catDiv.appendChild(title);
-
-        items.forEach(item => {
-          const itemDiv = document.createElement("div");
-          itemDiv.className = "item";
-          const label = document.createElement("label");
-          label.textContent = item;
-
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.className = "toggle";
-          checkbox.checked = data[item]?.available ?? true;
-
-          checkbox.addEventListener("change", () => {
-            set(ref(db, 'menu/' + item), { available: checkbox.checked });
-          });
-
-          itemDiv.appendChild(label);
-          itemDiv.appendChild(checkbox);
-          catDiv.appendChild(itemDiv);
-        });
-
-        panel.appendChild(catDiv);
-      }
-
-      const summary = document.getElementById("salesSummary");
-      summary.innerHTML = "";
-      for (const [category, items] of Object.entries(categories)) {
-        let total = 0;
-        items.forEach(item => total += sales[item] ?? 0);
-        const li = document.createElement("li");
-        li.textContent = `${category}: ${total} sold`;
-        summary.appendChild(li);
-      }
-    }
-
-    function fetchData() {
-      onValue(ref(db, 'menu'), snapshot => {
-        const menuData = snapshot.val() || {};
-        onValue(ref(db, 'sales'), snap => {
-          const salesData = snap.val() || {};
-          renderPanel(menuData, salesData);
-        });
-      });
-    }
-
-    fetchData();
+    window.toggleOffday = function () {
+      onValue(offdayRef, (snap) => {
+        const isOff = snap.val();
+        update(offdayRef, isOff ? false : true);
+      }, { onlyOnce: true });
+    };
   </script></body>
 </html>
