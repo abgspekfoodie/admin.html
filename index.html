@@ -1,96 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Snapbite™ Admin Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      background: #0e0e0e;
-      color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 2rem;
-    }
-    h1 {
-      text-align: center;
-      color: gold;
-    }
-    .menu-section {
-      max-width: 800px;
-      margin: auto;
-      margin-bottom: 2rem;
-      background: #1a1a1a;
-      padding: 1.5rem;
-      border-radius: 10px;
-    }
-    .menu-title {
-      font-size: 1.2rem;
-      color: #f0f0f0;
-      margin-bottom: 0.5rem;
-    }
-    .toggle-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #333;
-    }
-    label {
-      font-size: 1rem;
-    }
-    input[type="checkbox"] {
-      transform: scale(1.3);
-    }
-    .offday-toggle {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    .summary {
-      background: #1f1f1f;
-      max-width: 800px;
-      margin: auto;
-      padding: 1rem 1.5rem;
-      border-radius: 10px;
-    }
-    .summary-item {
-      font-size: 1.1rem;
-      margin: 0.5rem 0;
-      display: flex;
-      justify-content: space-between;
-    }
-    .logo-slogan {
-      text-align: center;
-      font-style: italic;
-      margin-bottom: 2rem;
-      color: #ccc;
-    }
-  </style>
-</head>
-<body>
-
-  <h1>Snapbite™ Admin Panel</h1>
-  <div class="logo-slogan">No Rules. Just Bite. Repeat.</div>
-
-  <div class="offday-toggle">
-    <label>
-      <input type="checkbox" id="offdayCheckbox"> Mark Today as Off Day
-    </label>
-  </div>
-
-  <div id="menuContainer" class="menu-section"></div>
-
-  <div class="summary">
-    <h2>Sales Summary</h2>
-    <div class="summary-item">Total Items Sold: <span id="totalSold">0</span></div>
-    <div class="summary-item">Gross Sales: RM <span id="grossSales">0.00</span></div>
-    <div class="summary-item">Net Profit: RM <span id="netProfit">0.00</span></div>
-  </div>
-
-  <!-- Firebase + Admin Logic -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
@@ -99,88 +15,160 @@
       projectId: "snapbite-admin",
       storageBucket: "snapbite-admin.appspot.com",
       messagingSenderId: "146625734660",
-      appId: "1:146625734660:web:23ada593e4818ed7332d51",
-      measurementId: "G-7RR3W1WJYK"
+      appId: "1:146625734660:web:23ada593e4818ed7332d51"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const menuRef = ref(db, "menu");
-    const salesRef = ref(db, "sales");
+    const menuContainer = document.getElementById("menuItems");
+    const offdayCheckbox = document.getElementById("offdayCheckbox");
+    const totalSoldEl = document.getElementById("totalSold");
+    const grossSalesEl = document.getElementById("grossSales");
+    const netProfitEl = document.getElementById("netProfit");
+
     const offdayRef = ref(db, "offday");
+    const menuRef = ref(db, "menu");
+    const statsRef = ref(db, "stats");
 
-    const menuContainer = document.getElementById("menuContainer");
+    onValue(menuRef, (snapshot) => {
+      const data = snapshot.val();
+      menuContainer.innerHTML = "";
+      for (let key in data) {
+        const item = data[key];
+        const div = document.createElement("div");
+        div.className = "menu-item";
+        div.innerHTML = `
+          <h3>${item.name}</h3>
+          <p>${item.description || "-"}</p>
+          <label class="switch">
+            <input type="checkbox" ${item.available ? "checked" : ""} data-key="${key}">
+            <span class="slider round"></span>
+          </label>
+        `;
+        menuContainer.appendChild(div);
+      }
 
-    function createToggleItem(category, itemKey, itemData) {
-      const itemRow = document.createElement("div");
-      itemRow.className = "toggle-row";
-
-      const label = document.createElement("label");
-      label.textContent = `${itemData.name}`;
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = itemData.available ?? true;
-
-      checkbox.addEventListener("change", () => {
-        update(ref(db, `menu/${category}/${itemKey}`), {
-          available: checkbox.checked
+      // Event binding lepas render
+      document.querySelectorAll(".menu-item input[type='checkbox']").forEach((input) => {
+        input.addEventListener("change", function() {
+          const key = this.getAttribute("data-key");
+          const available = this.checked;
+          update(ref(db, "menu/" + key), { available });
         });
       });
+    });
 
-      itemRow.appendChild(label);
-      itemRow.appendChild(checkbox);
-      return itemRow;
-    }
+    onValue(offdayRef, (snap) => {
+      const data = snap.val();
+      offdayCheckbox.checked = data === true;
+    });
 
-    function loadMenu() {
-      get(menuRef).then(snapshot => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          menuContainer.innerHTML = "";
+    offdayCheckbox.addEventListener("change", () => {
+      set(offdayRef, offdayCheckbox.checked);
+    });
 
-          Object.keys(data).forEach(category => {
-            const catDiv = document.createElement("div");
-            const catTitle = document.createElement("div");
-            catTitle.className = "menu-title";
-            catTitle.textContent = category.toUpperCase();
-            catDiv.appendChild(catTitle);
-
-            Object.entries(data[category]).forEach(([itemKey, itemData]) => {
-              const toggleItem = createToggleItem(category, itemKey, itemData);
-              catDiv.appendChild(toggleItem);
-            });
-
-            menuContainer.appendChild(catDiv);
-          });
-        }
-      });
-    }
-
-    function loadSalesSummary() {
-      onValue(salesRef, (snapshot) => {
-        const data = snapshot.val();
-        document.getElementById("totalSold").textContent = data?.totalSold ?? 0;
-        document.getElementById("grossSales").textContent = parseFloat(data?.grossSales ?? 0).toFixed(2);
-        document.getElementById("netProfit").textContent = parseFloat(data?.netProfit ?? 0).toFixed(2);
-      });
-    }
-
-    function setupOffdayToggle() {
-      const checkbox = document.getElementById("offdayCheckbox");
-      onValue(offdayRef, (snapshot) => {
-        checkbox.checked = snapshot.val() ?? false;
-      });
-
-      checkbox.addEventListener("change", () => {
-        set(offdayRef, checkbox.checked);
-      });
-    }
-
-    loadMenu();
-    loadSalesSummary();
-    setupOffdayToggle();
+    onValue(statsRef, (snap) => {
+      const data = snap.val();
+      totalSoldEl.innerText = data?.totalSold || 0;
+      grossSalesEl.innerText = (data?.grossSales || 0).toFixed(2);
+      netProfitEl.innerText = (data?.netProfit || 0).toFixed(2);
+    });
   </script>
 
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+      color: gold;
+      padding: 2rem;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .slogan {
+      text-align: center;
+      font-style: italic;
+      color: #ccc;
+      margin-bottom: 2rem;
+    }
+    .menu-item {
+      background: #2a2a2a;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .menu-item h3 {
+      margin: 0;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      float: right;
+    }
+    .switch input { display: none; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px; width: 26px;
+      left: 4px; bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: gold;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    .offday-toggle {
+      margin-top: 2rem;
+      background: #2a2a2a;
+      padding: 1rem;
+      border-radius: 10px;
+    }
+    .summary {
+      background: #2a2a2a;
+      margin-top: 2rem;
+      padding: 1rem;
+      border-radius: 10px;
+    }
+    .summary-item {
+      margin: 0.5rem 0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Snapbite™ Admin Panel</h1>
+  <div class="slogan">No Rules. Just Bite. Repeat.</div>
+  <div id="menuItems">Loading menu...</div>
+  <div class="offday-toggle">
+    <label>
+      <input type="checkbox" id="offdayCheckbox" />
+      Mark Today as Off Day
+    </label>
+  </div>
+  <div class="summary">
+    <h2>Sales Summary</h2>
+    <div class="summary-item">Total Items Sold: <span id="totalSold">0</span></div>
+    <div class="summary-item">Gross Sales: RM <span id="grossSales">0.00</span></div>
+    <div class="summary-item">Net Profit: RM <span id="netProfit">0.00</span></div>
+  </div>
 </body>
 </html>
