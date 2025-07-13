@@ -1,128 +1,162 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Snapbite Admin Panel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snapbite Admin Dashboard</title>
   <style>
     body {
+      font-family: 'Poppins', sans-serif;
+      background: #111;
+      color: #f5f5f5;
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #111;
-      color: #fff;
+      padding: 0;
     }
     header {
-      background: linear-gradient(to right, #000, #431a53);
-      padding: 1rem;
+      background: linear-gradient(90deg, #6e00ff, #ffcc00);
+      padding: 20px;
       text-align: center;
-      font-size: 1.8rem;
-      color: #ffd700;
-      font-weight: bold;
     }
-    main {
-      padding: 2rem;
+    header h1 {
+      margin: 0;
+      color: #000;
     }
-    .item {
-      background: #1e1e1e;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      box-shadow: 0 0 10px #333;
+    .container {
+      padding: 20px;
     }
-    .item h3 {
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #222;
+      border-radius: 10px;
+    }
+    .section h2 {
       margin-top: 0;
-      color: #ffd700;
+      color: #ffcc00;
     }
-    .toggle {
+    .menu-item {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #444;
     }
-    .toggle label {
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+    .menu-name {
       font-weight: bold;
-      margin-right: 1rem;
     }
-    .status-labels {
-      margin-top: 0.5rem;
-      font-size: 0.95rem;
+    .menu-status input[type="checkbox"] {
+      transform: scale(1.4);
     }
-    .status-labels span {
-      margin-right: 10px;
+    .summary {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
     }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 24px;
+    .summary .box {
+      background: #333;
+      padding: 20px;
+      border-radius: 8px;
+      width: 30%;
+      margin: 10px 0;
+      text-align: center;
     }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
+    .summary .box h3 {
+      margin: 0 0 10px;
+      color: #ffcc00;
     }
-    .slider {
-      position: absolute;
+    .btn-offday {
+      padding: 10px 20px;
+      background: #ff4444;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 24px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background-color: black;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: #ffd700;
-    }
-    input:checked + .slider:before {
-      transform: translateX(26px);
     }
   </style>
 </head>
 <body>
-  <header>Snapbite™ Admin Panel</header>
-  <main><div class="item">
-  <h3>Primebite™</h3>
-  <div class="toggle">
-    <div>
-      <div class="status-labels">
-        <span>✅ <strong>Available</strong></span>
-        <span>❌ <strong>Out of Stock</strong></span>
-      </div>
+  <header>
+    <h1>Snapbite™ Admin Panel</h1>
+    <p><strong>No Rules. Just Bite. Repeat.</strong></p>
+  </header>  <div class="container">
+    <div class="section">
+      <h2>Availability Toggle</h2>
+      <div id="menu-list"></div>
+    </div><div class="section">
+  <h2>Sales Summary</h2>
+  <div class="summary">
+    <div class="box">
+      <h3>Total Items Sold</h3>
+      <p id="total-sold">0</p>
     </div>
-    <label class="switch">
-      <input type="checkbox" id="primebite" checked>
-      <span class="slider"></span>
-    </label>
+    <div class="box">
+      <h3>Gross Sales</h3>
+      <p id="gross-sales">RM 0.00</p>
+    </div>
+    <div class="box">
+      <h3>Net Profit</h3>
+      <p id="net-profit">RM 0.00</p>
+    </div>
   </div>
 </div>
 
-<div class="item">
-  <h3>Beef N' Cheese™</h3>
-  <div class="toggle">
-    <div class="status-labels">
-      <span>✅ <strong>Available</strong></span>
-      <span>❌ <strong>Out of Stock</strong></span>
-    </div>
-    <label class="switch">
-      <input type="checkbox" id="beefncheese">
-      <span class="slider"></span>
-    </label>
-  </div>
+<div class="section">
+  <h2>Quick Actions</h2>
+  <button class="btn-offday" onclick="toggleOffDay()">Mark Today as Off Day</button>
 </div>
 
-<!-- Repeat for other menu items -->
+  </div>  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
 
-  </main>
-</body>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
+      authDomain: "snapbite-admin.firebaseapp.com",
+      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "snapbite-admin",
+      storageBucket: "snapbite-admin.appspot.com",
+      messagingSenderId: "146625734660",
+      appId: "1:146625734660:web:23ada593e4818ed7332d51"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const menuList = document.getElementById('menu-list');
+    const menuRef = ref(db, 'menus');
+
+    onValue(menuRef, (snapshot) => {
+      menuList.innerHTML = '';
+      const data = snapshot.val();
+      for (const key in data) {
+        const item = data[key];
+        const div = document.createElement('div');
+        div.className = 'menu-item';
+        div.innerHTML = `
+          <span class="menu-name">${item.name}</span>
+          <span class="menu-status">
+            <input type="checkbox" ${item.available ? 'checked' : ''} onchange="toggleAvailability('${key}', this.checked)"/>
+          </span>
+        `;
+        menuList.appendChild(div);
+      }
+    });
+
+    window.toggleAvailability = function(key, isAvailable) {
+      update(ref(db, 'menus/' + key), { available: isAvailable });
+    };
+
+    window.toggleOffDay = function() {
+      const today = new Date().toISOString().split('T')[0];
+      set(ref(db, 'offdays/' + today), { status: true });
+      alert('Today marked as off day!');
+    }
+
+    // Placeholder live data for total sold, sales and net profit
+    document.getElementById('total-sold').innerText = '126';
+    document.getElementById('gross-sales').innerText = 'RM 1,260.00';
+    document.getElementById('net-profit').innerText = 'RM 550.00';
+  </script></body>
 </html>
