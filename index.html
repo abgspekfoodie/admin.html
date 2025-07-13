@@ -1,136 +1,181 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Snapbite Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      padding: 0;
       font-family: 'Poppins', sans-serif;
-      background: #121212;
-      color: #fff;
+      background: linear-gradient(to bottom, #000, #1a1a1a);
+      color: #f1f1f1;
     }
     header {
-      background: linear-gradient(to right, #9c27b0, #ff9800);
-      padding: 20px;
+      background-color: #111;
+      color: gold;
+      padding: 1rem;
       text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-      color: #fff;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 1px;
     }
     .container {
       padding: 2rem;
-      max-width: 900px;
+      max-width: 1000px;
       margin: auto;
     }
-    .section {
-      background: #1e1e1e;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(255, 193, 7, 0.2);
-    }
-    h2 {
-      color: #ffcc00;
+    .menu-item {
+      background: #222;
+      padding: 1rem;
       margin-bottom: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+    }
+    .menu-item h3 {
+      margin: 0 0 0.5rem 0;
+      color: #ffd700;
     }
     .toggle {
       display: flex;
       align-items: center;
-      margin: 10px 0;
     }
-    .toggle label {
-      margin-left: 10px;
+    .toggle input[type="checkbox"] {
+      margin-right: 10px;
+      transform: scale(1.3);
     }
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      background: #ffcc00;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
+    .status {
+      margin-top: 0.3rem;
+      color: #aaa;
+      font-size: 0.9rem;
     }
-    .summary {
+    .dashboard {
+      background: #1a1a1a;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      border: 1px solid #333;
+      border-radius: 10px;
+    }
+    .dashboard h2 {
+      color: gold;
+      margin-bottom: 1rem;
+    }
+    .dashboard .data {
       display: flex;
-      justify-content: space-between;
       flex-wrap: wrap;
+      gap: 1.5rem;
     }
-    .summary-item {
+    .dashboard .data .box {
       background: #2a2a2a;
-      padding: 15px;
-      margin: 10px;
-      flex: 1 1 40%;
-      border-radius: 8px;
+      padding: 1rem;
+      border-radius: 10px;
+      flex: 1;
+      min-width: 200px;
       text-align: center;
+      color: #fff;
     }
-    .summary-item h3 {
-      margin: 0;
-      color: #ffcc00;
-    }
-    .summary-item p {
-      margin: 5px 0 0;
-      font-size: 18px;
+    .box span {
+      display: block;
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-top: 0.5rem;
+      color: gold;
     }
     footer {
       text-align: center;
-      color: #888;
-      padding: 1rem;
+      padding: 2rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .offday {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .offday input {
+      transform: scale(1.3);
+      margin-right: 10px;
     }
   </style>
 </head>
 <body>
-  <header>Snapbite™ Admin Panel</header>
+  <header>
+    Snapbite™ Admin Panel — No Rules. Just Bite. Repeat.
+  </header>
   <div class="container">
-    <div class="section">
-      <h2>Menu Availability</h2>
-      <div class="toggle"><input type="checkbox" id="primebite" checked><label for="primebite">Primebite™</label></div>
-      <div class="toggle"><input type="checkbox" id="beefcheese" checked><label for="beefcheese">Beef N' Cheese™</label></div>
-      <div class="toggle"><input type="checkbox" id="funguy" checked><label for="funguy">The Fun Guy™</label></div>
-      <div class="toggle"><input type="checkbox" id="fixer" checked><label for="fixer">The Fixer™</label></div>
-      <div class="toggle"><input type="checkbox" id="chickbite" checked><label for="chickbite">Chickbite™</label></div>
-      <div class="toggle"><input type="checkbox" id="goldcut" checked><label for="goldcut">Goldcut™</label></div>
-      <div class="toggle"><input type="checkbox" id="capcut" checked><label for="capcut">The Cap Cut™</label></div>
-      <div class="toggle"><input type="checkbox" id="stripstack" checked><label for="stripstack">Stripstack™</label></div>
-      <div class="toggle"><input type="checkbox" id="smoketaco" checked><label for="smoketaco">Smoke Beef Taco™</label></div>
-      <div class="toggle"><input type="checkbox" id="choptaco" checked><label for="choptaco">Smokey Chop Taco™</label></div>
-      <div class="toggle"><input type="checkbox" id="classic" checked><label for="classic">Classic Sausage™</label></div>
-      <div class="toggle"><input type="checkbox" id="chickola" checked><label for="chickola">Chickola™</label></div>
-      <div class="toggle"><input type="checkbox" id="cheese" checked><label for="cheese">Cheese (Add-on)</label></div>
-      <div class="toggle"><input type="checkbox" id="egg" checked><label for="egg">Egg (Add-on)</label></div>
-      <div class="toggle"><input type="checkbox" id="mushroom" checked><label for="mushroom">Mushroom (Add-on)</label></div>
-      <div class="toggle"><input type="checkbox" id="bacon" checked><label for="bacon">Bacon (Add-on)</label></div>
-      <button onclick="markOffDay()">Set Today as Off-Day</button>
-    </div><div class="section">
-  <h2>Sales Summary</h2>
-  <div class="summary">
-    <div class="summary-item">
-      <h3>Total Orders</h3>
-      <p id="totalOrders">0</p>
-    </div>
-    <div class="summary-item">
-      <h3>Gross Sales (RM)</h3>
-      <p id="grossSales">0.00</p>
-    </div>
-    <div class="summary-item">
-      <h3>Net Profit (RM)</h3>
-      <p id="netProfit">0.00</p>
-    </div>
-    <div class="summary-item">
-      <h3>Top Seller</h3>
-      <p id="topSeller">-</p>
-    </div>
-  </div>
+    <div class="dashboard">
+      <h2>Sales Summary</h2>
+      <div class="data">
+        <div class="box">
+          Daily Sales
+          <span id="dailySales">RM 0.00</span>
+        </div>
+        <div class="box">
+          Weekly Sales
+          <span id="weeklySales">RM 0.00</span>
+        </div>
+        <div class="box">
+          Monthly PNL
+          <span id="monthlyPNL">RM 0.00</span>
+        </div>
+        <div class="box">
+          Total Items Sold
+          <span id="totalSold">0</span>
+        </div>
+      </div>
+    </div><div id="menuList"></div>
+
+<div class="offday">
+  <label><input type="checkbox" id="toggleOffday"> Mark Today as Off Day</label>
 </div>
 
-  </div>
-  <footer>No Rules. Just Bite. Repeat.</footer>
-  <script>
-    function markOffDay() {
-      alert("Today's marked as off-day. Orders are disabled.");
-    }
-  </script>
-</body>
+  </div>  <footer>
+    Snapbite™ Admin &mdash; Powered by Firebase | abgspekfoodie@gmail.com
+  </footer>  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getDatabase, ref, get, onValue, set, update } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
+      authDomain: "snapbite-admin.firebaseapp.com",
+      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "snapbite-admin",
+      storageBucket: "snapbite-admin.appspot.com",
+      messagingSenderId: "146625734660",
+      appId: "1:146625734660:web:23ada593e4818ed7332d51"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const menuRef = ref(db, 'menu');
+
+    onValue(menuRef, (snapshot) => {
+      const data = snapshot.val();
+      const menuList = document.getElementById('menuList');
+      menuList.innerHTML = '';
+      Object.keys(data).forEach(key => {
+        const item = data[key];
+        const div = document.createElement('div');
+        div.className = 'menu-item';
+        div.innerHTML = `
+          <h3>${item.name}</h3>
+          <div class="toggle">
+            <input type="checkbox" id="${key}" ${item.available ? 'checked' : ''}>
+            <label for="${key}">${item.available ? 'Available' : 'Sold Out'}</label>
+          </div>
+          <div class="status">Category: ${item.category}</div>
+        `;
+        const checkbox = div.querySelector('input');
+        checkbox.addEventListener('change', () => {
+          update(ref(db, `menu/${key}`), { available: checkbox.checked });
+          checkbox.nextElementSibling.innerText = checkbox.checked ? 'Available' : 'Sold Out';
+        });
+        menuList.appendChild(div);
+      });
+    });
+
+    document.getElementById('toggleOffday').addEventListener('change', (e) => {
+      set(ref(db, 'offday'), e.target.checked);
+    });
+  </script></body>
 </html>
