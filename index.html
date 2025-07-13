@@ -1,190 +1,123 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Snapbite™ Admin Dashboard</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background-color: #0e0e0e;
-      color: #fff;
-    }
-    header {
-      background-color: #ff9500;
-      color: #000;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    h1 {
-      font-size: 1.8rem;
-      margin: 0;
-    }
-    .offday-toggle label {
-      font-weight: bold;
-      font-size: 1rem;
-    }
-    .offday-toggle input {
-      margin-right: 0.5rem;
-    }
-    main {
-      padding: 2rem;
-    }
-    section {
-      margin-bottom: 2rem;
-    }
-    .order {
-      background-color: #1e1e1e;
-      border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 0 10px rgba(255, 149, 0, 0.2);
-    }
-    .order h3 {
-      margin: 0 0 0.5rem 0;
-      color: #ff9500;
-    }
-    .order small {
-      display: block;
-      color: #aaa;
-      margin-bottom: 0.5rem;
-    }
-    .order p {
-      margin: 0.2rem 0;
-    }
-    .summary-box {
-      background: #1a1a1a;
-      padding: 1rem;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-    }
-    .summary-box h3 {
-      color: #ff9500;
-      margin-bottom: 0.5rem;
-    }
-    .summary-box p {
-      margin: 0.2rem 0;
-    }
+    body { font-family: 'Poppins', sans-serif; background: #0e0e0e; color: #fff; padding: 2rem; }
+    h1 { color: #ff9500; }
+    .card { background: #1c1c1c; border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 0 10px rgba(255,149,0,0.2); }
+    .flex { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .menu-item { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+    .menu-item button { background: #ff9500; color: #000; border: none; padding: 4px 10px; border-radius: 5px; cursor: pointer; }
+    .stats { display: flex; flex-direction: column; gap: 0.3rem; }
+    .offday-toggle { margin-top: 1rem; }
+    .orders { font-size: 0.9rem; line-height: 1.4; }
+    .order-block { border-bottom: 1px solid #333; padding: 0.5rem 0; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Snapbite™ Admin Panel</h1>
+  <h1>Snapbite™ Admin Panel</h1>  <div class="card">
+    <h2>Menu Availability</h2>
+    <div id="menuList">Loading menu...</div>
+  </div>  <div class="card">
+    <h2>Sales Summary</h2>
+    <div class="stats" id="salesStats">Loading sales...</div>
     <div class="offday-toggle">
-      <label><input type="checkbox" id="offdayCheckbox" /> Mark Today as Off Day</label>
+      <label>
+        <input type="checkbox" id="offdayCheckbox"> Mark Today as Off Day
+      </label>
     </div>
-  </header>
-  <main>
-    <section id="salesSummary">
-      <div class="summary-box">
-        <h3>Today's Sales Summary</h3>
-        <p>Total Orders: <span id="totalOrders">0</span></p>
-        <p>Gross Sales: RM <span id="grossSales">0.00</span></p>
-        <p>Gross Profit: RM <span id="grossProfit">0.00</span></p>
-      </div>
-    </section>
+  </div>  <div class="card">
+    <h2>Live Orders</h2>
+    <div id="liveOrders">Loading orders...</div>
+  </div><script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
+    authDomain: "snapbite-admin.firebaseapp.com",
+    databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "snapbite-admin",
+    storageBucket: "snapbite-admin.appspot.com",
+    messagingSenderId: "146625734660",
+    appId: "1:146625734660:web:23ada593e4818ed7332d51",
+    measurementId: "G-7RR3W1WJYK"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-    <section id="liveOrders">
-      <h2>Live Orders</h2>
-      <div id="ordersContainer">
-        <!-- Orders will appear here -->
-      </div>
-    </section>
-  </main>
+  const menuList = document.getElementById("menuList");
+  const salesStats = document.getElementById("salesStats");
+  const offdayCheckbox = document.getElementById("offdayCheckbox");
+  const liveOrders = document.getElementById("liveOrders");
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
-      authDomain: "snapbite-admin.firebaseapp.com",
-      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "snapbite-admin",
-      storageBucket: "snapbite-admin.appspot.com",
-      messagingSenderId: "146625734660",
-      appId: "1:146625734660:web:23ada593e4818ed7332d51",
-      measurementId: "G-7RR3W1WJYK"
-    };
-    firebase.initializeApp(firebaseConfig);
-
-    const ordersRef = firebase.database().ref("orders");
-
-    const costMap = {
-      "Primebite™": 6.79,
-      "Beef N’ Cheese™": 7.27,
-      "The Fun Guy™": 8.47,
-      "The Fixer™": 9.97,
-      "Chickbite™": 3.24,
-      "Goldcut™": 3.72,
-      "The Cap Cut™": 4.92,
-      "Stripstack™": 5.52,
-      "Smoke Beef Taco™": 7.33,
-      "Smokey Chicken Taco™": 6.46,
-      "Mix Taco™": 7.90,
-      "Smoke Beef Quesadilla™": 11.15,
-      "Smoke Chicken Quesadilla™": 9.66,
-      "Mix Quesadilla™": 10.40,
-      "Classic Sausage™": 4.00,
-      "Loaded Sausage™": 8.00,
-      "Popcorn Chicken": 3.00
-    };
-
-    ordersRef.on("value", snapshot => {
-      const ordersContainer = document.getElementById("ordersContainer");
-      ordersContainer.innerHTML = "";
-
-      let grossSales = 0;
-      let grossProfit = 0;
-      let totalOrders = 0;
-
-      snapshot.forEach(orderSnap => {
-        const order = orderSnap.val();
-        if (!order.time || order.status === "cancelled") return;
-
-        const div = document.createElement("div");
-        div.className = "order";
-        div.innerHTML = `
-          <h3>${order.name || "Unnamed"}</h3>
-          <small>${order.phone || ""}</small>
-          <p><strong>Items:</strong><br>${(order.items || []).join("<br>")}</p>
-          <p><strong>Total:</strong> RM ${order.total || "0.00"}</p>
-          <p><strong>Status:</strong> ${order.status || "pending"}</p>
-        `;
-        ordersContainer.appendChild(div);
-
-        if (order.status === "done") {
-          totalOrders++;
-          const total = parseFloat(order.total || 0);
-          grossSales += total;
-
-          let cost = 0;
-          (order.items || []).forEach(itemLine => {
-            const itemName = itemLine.split(" + ")[0].trim();
-            if (costMap[itemName]) cost += costMap[itemName];
-          });
-          grossProfit += (total - cost);
-        }
-      });
-
-      document.getElementById("totalOrders").textContent = totalOrders;
-      document.getElementById("grossSales").textContent = grossSales.toFixed(2);
-      document.getElementById("grossProfit").textContent = grossProfit.toFixed(2);
+  db.ref("menus").on("value", snap => {
+    const menus = snap.val();
+    if (!menus || menus.length === 0) {
+      menuList.innerHTML = "<em>No menu items found.</em>";
+      return;
+    }
+    menuList.innerHTML = '';
+    menus.forEach((menu, index) => {
+      const row = document.createElement("div");
+      row.className = "menu-item";
+      row.innerHTML = `
+        <span>${menu.name} (RM${menu.price.toFixed(2)})</span>
+        <button onclick="toggleMenu(${index}, ${!menu.available})">
+          ${menu.available ? 'Disable' : 'Enable'}
+        </button>`;
+      menuList.appendChild(row);
     });
+  });
 
-    const offdayCheckbox = document.getElementById("offdayCheckbox");
-    const todayKey = new Date().toISOString().slice(0, 10);
-    const offdayRef = firebase.database().ref("offdays/" + todayKey);
+  function toggleMenu(index, newStatus) {
+    db.ref(`menus/${index}/available`).set(newStatus);
+  }
 
-    offdayRef.on("value", snap => {
-      offdayCheckbox.checked = snap.val() === true;
+  const today = new Date().toISOString().split('T')[0];
+  const currentMonth = today.slice(0, 7);
+  const lastMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
+
+  function displaySales(monthData, label) {
+    return monthData ? `<div><strong>${label} Gross:</strong> RM${monthData.gross.toFixed(2)}</div>
+      <div><strong>${label} Net:</strong> RM${monthData.net.toFixed(2)}</div>
+      <div><strong>${label} Profit:</strong> RM${monthData.profit.toFixed(2)}</div>` : `<i>No data for ${label}</i>`;
+  }
+
+  Promise.all([
+    db.ref(`salesSummary/${currentMonth}`).once("value"),
+    db.ref(`salesSummary/${lastMonth}`).once("value")
+  ]).then(([currSnap, lastSnap]) => {
+    const current = currSnap.val();
+    const previous = lastSnap.val();
+    salesStats.innerHTML = displaySales(current, "This Month") + '<br>' + displaySales(previous, "Last Month");
+  });
+
+  db.ref(`offdays/${today}`).once("value").then(snap => {
+    offdayCheckbox.checked = snap.val() === true;
+  });
+  offdayCheckbox.addEventListener("change", () => {
+    db.ref(`offdays/${today}`).set(offdayCheckbox.checked);
+    alert("Offday status updated.");
+  });
+
+  // Live Orders
+  db.ref("orders").limitToLast(20).on("value", snap => {
+    const data = snap.val();
+    if (!data) {
+      liveOrders.innerHTML = "<i>No orders yet.</i>";
+      return;
+    }
+    const entries = Object.entries(data).reverse();
+    liveOrders.innerHTML = '';
+    entries.forEach(([key, order]) => {
+      const block = document.createElement("div");
+      block.className = "order-block";
+      block.innerHTML = `<strong>${order.name}</strong> (${order.phone})<br>
+        Items: ${order.items.map(i => i.name).join(", ")}<br>
+        Total: RM${order.total} — ${new Date(order.timestamp).toLocaleString()}`;
+      liveOrders.appendChild(block);
     });
-
-    offdayCheckbox.addEventListener("change", () => {
-      offdayRef.set(offdayCheckbox.checked);
-    });
-  </script>
-</body>
+  });
+</script></body>
 </html>
