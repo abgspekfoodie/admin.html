@@ -1,12 +1,83 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Snapbite™ Admin Panel</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #111;
+      color: #FFD700;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .menu-section {
+      margin-top: 2rem;
+      border-top: 1px solid #444;
+      padding-top: 1rem;
+    }
+
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #333;
+    }
+
+    .toggle {
+      transform: scale(1.2);
+    }
+
+    .summary {
+      margin-top: 3rem;
+      background: #222;
+      padding: 1rem;
+      border-radius: 10px;
+    }
+
+    .summary-item {
+      margin-bottom: 0.5rem;
+    }
+
+    .offday-toggle {
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    input[type="checkbox"] {
+      accent-color: gold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Snapbite™ Admin Panel</h1>
+  <p style="text-align:center;"><em>No Rules. Just Bite. Repeat.</em></p>
+
+  <div class="offday-toggle">
+    <label>
+      <input type="checkbox" id="offdayCheckbox"> Mark Today as Off Day
+    </label>
+  </div>
+
+  <div id="menuContainer" class="menu-section"></div>
+
+  <div class="summary">
+    <h2>Sales Summary</h2>
+    <div class="summary-item">Total Items Sold: <span id="totalSold">0</span></div>
+    <div class="summary-item">Gross Sales: RM <span id="grossSales">0.00</span></div>
+    <div class="summary-item">Net Profit: RM <span id="netProfit">0.00</span></div>
+  </div>
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
@@ -21,154 +92,80 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const menuContainer = document.getElementById("menuItems");
-    const offdayCheckbox = document.getElementById("offdayCheckbox");
+    const menuContainer = document.getElementById("menuContainer");
     const totalSoldEl = document.getElementById("totalSold");
     const grossSalesEl = document.getElementById("grossSales");
     const netProfitEl = document.getElementById("netProfit");
+    const offdayCheckbox = document.getElementById("offdayCheckbox");
 
+    // Load Off Day
     const offdayRef = ref(db, "offday");
-    const menuRef = ref(db, "menu");
-    const statsRef = ref(db, "stats");
+    onValue(offdayRef, (snapshot) => {
+      const isOff = snapshot.val() || false;
+      offdayCheckbox.checked = isOff;
+    });
 
+    offdayCheckbox.addEventListener("change", () => {
+      update(ref(db), { offday: offdayCheckbox.checked });
+    });
+
+    // Load Menu
+    const menuRef = ref(db, "menu");
     onValue(menuRef, (snapshot) => {
       const data = snapshot.val();
       menuContainer.innerHTML = "";
-      for (let key in data) {
-        const item = data[key];
-        const div = document.createElement("div");
-        div.className = "menu-item";
-        div.innerHTML = `
-          <h3>${item.name}</h3>
-          <p>${item.description || "-"}</p>
-          <label class="switch">
-            <input type="checkbox" ${item.available ? "checked" : ""} data-key="${key}">
-            <span class="slider round"></span>
-          </label>
-        `;
-        menuContainer.appendChild(div);
-      }
 
-      // Event binding lepas render
-      document.querySelectorAll(".menu-item input[type='checkbox']").forEach((input) => {
-        input.addEventListener("change", function() {
-          const key = this.getAttribute("data-key");
-          const available = this.checked;
-          update(ref(db, "menu/" + key), { available });
+      Object.keys(data).forEach(category => {
+        const catEl = document.createElement("div");
+        catEl.innerHTML = `<h2>${category}</h2>`;
+        menuContainer.appendChild(catEl);
+
+        Object.entries(data[category]).forEach(([itemKey, item]) => {
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "menu-item";
+          itemDiv.innerHTML = `
+            <div>
+              <strong>${item.name}</strong> - ${item.description || ""}
+            </div>
+            <label>
+              <input type="checkbox" class="toggle" data-cat="${category}" data-key="${itemKey}" ${item.available ? 'checked' : ''}>
+              Available
+            </label>
+          `;
+          menuContainer.appendChild(itemDiv);
         });
       });
     });
 
-    onValue(offdayRef, (snap) => {
-      const data = snap.val();
-      offdayCheckbox.checked = data === true;
+    // Toggle Availability
+    menuContainer.addEventListener("change", (e) => {
+      if (e.target.classList.contains("toggle")) {
+        const cat = e.target.dataset.cat;
+        const key = e.target.dataset.key;
+        update(ref(db, `menu/${cat}/${key}`), {
+          available: e.target.checked
+        });
+      }
     });
 
-    offdayCheckbox.addEventListener("change", () => {
-      set(offdayRef, offdayCheckbox.checked);
-    });
+    // Sales Summary
+    const salesRef = ref(db, "sales");
+    onValue(salesRef, (snapshot) => {
+      const sales = snapshot.val() || {};
+      let totalSold = 0;
+      let gross = 0;
+      let profit = 0;
 
-    onValue(statsRef, (snap) => {
-      const data = snap.val();
-      totalSoldEl.innerText = data?.totalSold || 0;
-      grossSalesEl.innerText = (data?.grossSales || 0).toFixed(2);
-      netProfitEl.innerText = (data?.netProfit || 0).toFixed(2);
+      Object.values(sales).forEach(entry => {
+        totalSold += entry.qty || 0;
+        gross += entry.total || 0;
+        profit += entry.profit || 0;
+      });
+
+      totalSoldEl.textContent = totalSold;
+      grossSalesEl.textContent = gross.toFixed(2);
+      netProfitEl.textContent = profit.toFixed(2);
     });
   </script>
-
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
-      color: gold;
-      padding: 2rem;
-      margin: 0;
-    }
-    h1 {
-      text-align: center;
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-    .slogan {
-      text-align: center;
-      font-style: italic;
-      color: #ccc;
-      margin-bottom: 2rem;
-    }
-    .menu-item {
-      background: #2a2a2a;
-      border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-    .menu-item h3 {
-      margin: 0;
-    }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 34px;
-      float: right;
-    }
-    .switch input { display: none; }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0;
-      right: 0; bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-      border-radius: 34px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px; width: 26px;
-      left: 4px; bottom: 4px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: gold;
-    }
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
-    .offday-toggle {
-      margin-top: 2rem;
-      background: #2a2a2a;
-      padding: 1rem;
-      border-radius: 10px;
-    }
-    .summary {
-      background: #2a2a2a;
-      margin-top: 2rem;
-      padding: 1rem;
-      border-radius: 10px;
-    }
-    .summary-item {
-      margin: 0.5rem 0;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <h1>Snapbite™ Admin Panel</h1>
-  <div class="slogan">No Rules. Just Bite. Repeat.</div>
-  <div id="menuItems">Loading menu...</div>
-  <div class="offday-toggle">
-    <label>
-      <input type="checkbox" id="offdayCheckbox" />
-      Mark Today as Off Day
-    </label>
-  </div>
-  <div class="summary">
-    <h2>Sales Summary</h2>
-    <div class="summary-item">Total Items Sold: <span id="totalSold">0</span></div>
-    <div class="summary-item">Gross Sales: RM <span id="grossSales">0.00</span></div>
-    <div class="summary-item">Net Profit: RM <span id="netProfit">0.00</span></div>
-  </div>
 </body>
 </html>
