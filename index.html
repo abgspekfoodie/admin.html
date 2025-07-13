@@ -5,119 +5,121 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    body { font-family: 'Poppins', sans-serif; background: #0e0e0e; color: #fff; padding: 2rem; }
+    body { font-family: 'Arial', sans-serif; background: #0e0e0e; color: #fff; padding: 2rem; }
     h1 { color: #ff9500; }
-    .card { background: #1c1c1c; border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 0 10px rgba(255,149,0,0.2); }
-    .flex { display: flex; gap: 1.5rem; flex-wrap: wrap; }
-    .menu-item { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
-    .menu-item button { background: #ff9500; color: #000; border: none; padding: 4px 10px; border-radius: 5px; cursor: pointer; }
-    .stats { display: flex; flex-direction: column; gap: 0.3rem; }
-    .offday-toggle { margin-top: 1rem; }
-    .orders { font-size: 0.9rem; line-height: 1.4; }
-    .order-block { border-bottom: 1px solid #333; padding: 0.5rem 0; }
+    .summary-box { background: #1e1e1e; padding: 1rem; margin-top: 1rem; border-radius: 10px; }
+    .summary-box h3 { margin-top: 0; color: #ff9500; }
+    .menu-availability, .live-orders, .sales-stats { margin-top: 2rem; }
+    label { display: inline-block; margin-right: 1rem; }
+    input[type="checkbox"] { transform: scale(1.2); margin-right: 0.5rem; }
+    .order-block { background: #191919; margin-bottom: 1rem; padding: 1rem; border-radius: 8px; border: 1px solid #333; }
+    .offday-toggle { margin-top: 2rem; }
   </style>
 </head>
 <body>
-  <h1>Snapbite™ Admin Panel</h1>  <div class="card">
-    <h2>Menu Availability</h2>
-    <div id="menuList">Loading menu...</div>
-  </div>  <div class="card">
-    <h2>Sales Summary</h2>
-    <div class="stats" id="salesStats">Loading sales...</div>
-    <div class="offday-toggle">
-      <label>
-        <input type="checkbox" id="offdayCheckbox"> Mark Today as Off Day
-      </label>
-    </div>
-  </div>  <div class="card">
-    <h2>Live Orders</h2>
-    <div id="liveOrders">Loading orders...</div>
+  <h1>Snapbite™ Admin Dashboard</h1>  <div class="menu-availability summary-box">
+    <h3>Menu Availability</h3>
+    <div id="menuList"></div>
+  </div>  <div class="sales-stats summary-box">
+    <h3>Sales Summary</h3>
+    <p><strong>Today:</strong> RM <span id="todaySales">0.00</span></p>
+    <p><strong>This Month:</strong> RM <span id="monthSales">0.00</span></p>
+    <p><strong>Last Month:</strong> RM <span id="lastMonthSales">0.00</span></p>
+  </div>  <div class="offday-toggle summary-box">
+    <label><input type="checkbox" id="offdayCheckbox"> Mark Today as Off Day</label>
+  </div>  <div class="live-orders summary-box">
+    <h3>Live Orders</h3>
+    <div id="liveOrders"></div>
   </div><script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
-    authDomain: "snapbite-admin.firebaseapp.com",
-    databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "snapbite-admin",
-    storageBucket: "snapbite-admin.appspot.com",
-    messagingSenderId: "146625734660",
-    appId: "1:146625734660:web:23ada593e4818ed7332d51",
-    measurementId: "G-7RR3W1WJYK"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+const firebaseConfig = {
+  apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
+  authDomain: "snapbite-admin.firebaseapp.com",
+  databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "snapbite-admin",
+  storageBucket: "snapbite-admin.appspot.com",
+  messagingSenderId: "146625734660",
+  appId: "1:146625734660:web:23ada593e4818ed7332d51",
+  measurementId: "G-7RR3W1WJYK"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-  const menuList = document.getElementById("menuList");
-  const salesStats = document.getElementById("salesStats");
-  const offdayCheckbox = document.getElementById("offdayCheckbox");
-  const liveOrders = document.getElementById("liveOrders");
-
-  db.ref("menus").on("value", snap => {
-    const menus = snap.val();
-    if (!menus || menus.length === 0) {
-      menuList.innerHTML = "<em>No menu items found.</em>";
-      return;
-    }
-    menuList.innerHTML = '';
-    menus.forEach((menu, index) => {
-      const row = document.createElement("div");
-      row.className = "menu-item";
-      row.innerHTML = `
-        <span>${menu.name} (RM${menu.price.toFixed(2)})</span>
-        <button onclick="toggleMenu(${index}, ${!menu.available})">
-          ${menu.available ? 'Disable' : 'Enable'}
-        </button>`;
-      menuList.appendChild(row);
-    });
+// MENU AVAILABILITY
+const menuList = document.getElementById("menuList");
+db.ref("menus").on("value", snap => {
+  menuList.innerHTML = "";
+  const menus = snap.val() || [];
+  menus.forEach((menu, index) => {
+    const label = document.createElement("label");
+    label.innerHTML = `<input type="checkbox" ${menu.available ? "checked" : ""} onchange="toggleMenu(${index}, this.checked)"> ${menu.name}`;
+    menuList.appendChild(label);
   });
+});
 
-  function toggleMenu(index, newStatus) {
-    db.ref(`menus/${index}/available`).set(newStatus);
-  }
+function toggleMenu(index, status) {
+  db.ref(`menus/${index}/available`).set(status);
+}
 
-  const today = new Date().toISOString().split('T')[0];
-  const currentMonth = today.slice(0, 7);
-  const lastMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
+// SALES SUMMARY
+const todayKey = new Date().toISOString().split("T")[0];
+const monthKey = todayKey.substring(0, 7);
+const lastMonthKey = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().substring(0, 7);
 
-  function displaySales(monthData, label) {
-    return monthData ? `<div><strong>${label} Gross:</strong> RM${monthData.gross.toFixed(2)}</div>
-      <div><strong>${label} Net:</strong> RM${monthData.net.toFixed(2)}</div>
-      <div><strong>${label} Profit:</strong> RM${monthData.profit.toFixed(2)}</div>` : `<i>No data for ${label}</i>`;
-  }
+db.ref("orders").on("value", snap => {
+  let today = 0, thisMonth = 0, lastMonth = 0;
+  const data = snap.val() || {};
+  Object.values(data).forEach(order => {
+    if (!order.timestamp) return;
+    const date = order.timestamp.split("T")[0];
+    const month = date.substring(0, 7);
+    const total = parseFloat(order.total || 0);
 
-  Promise.all([
-    db.ref(`salesSummary/${currentMonth}`).once("value"),
-    db.ref(`salesSummary/${lastMonth}`).once("value")
-  ]).then(([currSnap, lastSnap]) => {
-    const current = currSnap.val();
-    const previous = lastSnap.val();
-    salesStats.innerHTML = displaySales(current, "This Month") + '<br>' + displaySales(previous, "Last Month");
+    if (date === todayKey) today += total;
+    if (month === monthKey) thisMonth += total;
+    if (month === lastMonthKey) lastMonth += total;
   });
+  document.getElementById("todaySales").textContent = today.toFixed(2);
+  document.getElementById("monthSales").textContent = thisMonth.toFixed(2);
+  document.getElementById("lastMonthSales").textContent = lastMonth.toFixed(2);
+});
 
-  db.ref(`offdays/${today}`).once("value").then(snap => {
-    offdayCheckbox.checked = snap.val() === true;
-  });
-  offdayCheckbox.addEventListener("change", () => {
-    db.ref(`offdays/${today}`).set(offdayCheckbox.checked);
-    alert("Offday status updated.");
-  });
+// OFFDAY TOGGLE
+const offdayCheckbox = document.getElementById("offdayCheckbox");
+db.ref(`offdays/${todayKey}`).on("value", snap => {
+  offdayCheckbox.checked = !!snap.val();
+});
+offdayCheckbox.addEventListener("change", () => {
+  db.ref(`offdays/${todayKey}`).set(offdayCheckbox.checked);
+});
 
-  // Live Orders
-  db.ref("orders").limitToLast(20).on("value", snap => {
-    const data = snap.val();
-    if (!data) {
-      liveOrders.innerHTML = "<i>No orders yet.</i>";
-      return;
-    }
-    const entries = Object.entries(data).reverse();
-    liveOrders.innerHTML = '';
-    entries.forEach(([key, order]) => {
-      const block = document.createElement("div");
-      block.className = "order-block";
-      block.innerHTML = `<strong>${order.name}</strong> (${order.phone})<br>
-        Items: ${order.items.map(i => i.name).join(", ")}<br>
-        Total: RM${order.total} — ${new Date(order.timestamp).toLocaleString()}`;
-      liveOrders.appendChild(block);
-    });
+// LIVE ORDERS
+const liveOrders = document.getElementById("liveOrders");
+db.ref("orders").limitToLast(10).on("value", snap => {
+  liveOrders.innerHTML = "";
+  const orders = snap.val() || {};
+  const entries = Object.entries(orders).reverse();
+  entries.forEach(([key, order]) => {
+    const block = document.createElement("div");
+    block.className = "order-block";
+
+    const itemLines = order.items.map(item => {
+      let text = `– ${item.name}`;
+      if (item.addons && item.addons.length > 0) {
+        const addonList = item.addons.map(a => `${a.label} (RM${a.price.toFixed(2)})`).join(", ");
+        text += ` + ${addonList}`;
+      }
+      if (item.sauce) {
+        text += ` with ${item.sauce}`;
+      }
+      return text;
+    }).join("<br>");
+
+    block.innerHTML = `<strong>${order.name}</strong> (${order.phone})<br>
+      ${itemLines}<br>
+      <strong>Total:</strong> RM${order.total} <br>
+      <small>${new Date(order.timestamp).toLocaleString()}</small>`;
+    liveOrders.appendChild(block);
   });
+});
 </script></body>
 </html>
