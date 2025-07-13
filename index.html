@@ -2,161 +2,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snapbite Admin Dashboard</title>
+  <title>Snapbite™ Admin Panel</title>
   <style>
     body {
+      background: linear-gradient(to right, #1a1a1a, #2c2c2c);
       font-family: 'Poppins', sans-serif;
-      background: #111;
-      color: #f5f5f5;
+      color: #ffd700;
       margin: 0;
       padding: 0;
     }
     header {
-      background: linear-gradient(90deg, #6e00ff, #ffcc00);
-      padding: 20px;
+      background: #000;
+      color: #ffd700;
+      padding: 1rem;
       text-align: center;
-    }
-    header h1 {
-      margin: 0;
-      color: #000;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border-bottom: 2px solid #ffd700;
     }
     .container {
-      padding: 20px;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #1a1a1a;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ffd70055;
     }
-    .section {
-      margin-bottom: 30px;
-      padding: 20px;
-      background: #222;
-      border-radius: 10px;
+    h2 {
+      border-bottom: 1px solid #444;
+      padding-bottom: 0.5rem;
+      margin-top: 2rem;
+      color: #fff;
     }
-    .section h2 {
-      margin-top: 0;
-      color: #ffcc00;
-    }
-    .menu-item {
+    .item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #444;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      background: #222;
+      border-radius: 6px;
     }
-    .menu-item:last-child {
-      border-bottom: none;
+    .item-name {
+      color: #fff;
     }
-    .menu-name {
-      font-weight: bold;
-    }
-    .menu-status input[type="checkbox"] {
-      transform: scale(1.4);
+    .toggle {
+      transform: scale(1.2);
     }
     .summary {
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-    }
-    .summary .box {
-      background: #333;
-      padding: 20px;
-      border-radius: 8px;
-      width: 30%;
-      margin: 10px 0;
-      text-align: center;
-    }
-    .summary .box h3 {
-      margin: 0 0 10px;
-      color: #ffcc00;
-    }
-    .btn-offday {
-      padding: 10px 20px;
-      background: #ff4444;
+      background: #111;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 2rem;
       color: #fff;
+    }
+    .offday-btn {
+      background: #ffd700;
+      color: #000;
+      padding: 0.5rem 1rem;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-top: 1rem;
       cursor: pointer;
+    }
+    .slogan {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1.1rem;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Snapbite™ Admin Panel</h1>
-    <p><strong>No Rules. Just Bite. Repeat.</strong></p>
-  </header>  <div class="container">
-    <div class="section">
-      <h2>Availability Toggle</h2>
-      <div id="menu-list"></div>
-    </div><div class="section">
-  <h2>Sales Summary</h2>
-  <div class="summary">
-    <div class="box">
-      <h3>Total Items Sold</h3>
-      <p id="total-sold">0</p>
-    </div>
-    <div class="box">
-      <h3>Gross Sales</h3>
-      <p id="gross-sales">RM 0.00</p>
-    </div>
-    <div class="box">
-      <h3>Net Profit</h3>
-      <p id="net-profit">RM 0.00</p>
-    </div>
+  <header>Snapbite™ Admin Panel</header>
+  <div class="container">
+    <h2>Menu Availability</h2>
+    <div class="item"><span class="item-name">Primebite™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Beef N' Cheese™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">The Fun Guy™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">The Fixer™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Chickbite™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Goldcut™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">The Cap Cut™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Stripstack™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Smoke Beef Taco™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Smokey Chop Taco™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Mix Taco™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Smoke Beef Quesadilla™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Smoke Chicken Quesadilla™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Mix Quesadilla™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Classic Sausage™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Chickola™</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Add-on: Cheese</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Add-on: Egg</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Add-on: Mushroom</span> <input type="checkbox" class="toggle" /></div>
+    <div class="item"><span class="item-name">Add-on: Bacon</span> <input type="checkbox" class="toggle" /></div><button class="offday-btn" onclick="toggleOffDay()">Toggle Off Day</button>
+
+<h2>Sales Summary</h2>
+<div class="summary">
+  <p>Items Sold Today: <strong>0</strong></p>
+  <p>Gross Sales: <strong>RM 0.00</strong></p>
+  <p>Net Sales: <strong>RM 0.00</strong></p>
+  <p>Top Item: <strong>--</strong></p>
+</div>
+
   </div>
-</div>
-
-<div class="section">
-  <h2>Quick Actions</h2>
-  <button class="btn-offday" onclick="toggleOffDay()">Mark Today as Off Day</button>
-</div>
-
-  </div>  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-    import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
-      authDomain: "snapbite-admin.firebaseapp.com",
-      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "snapbite-admin",
-      storageBucket: "snapbite-admin.appspot.com",
-      messagingSenderId: "146625734660",
-      appId: "1:146625734660:web:23ada593e4818ed7332d51"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const menuList = document.getElementById('menu-list');
-    const menuRef = ref(db, 'menus');
-
-    onValue(menuRef, (snapshot) => {
-      menuList.innerHTML = '';
-      const data = snapshot.val();
-      for (const key in data) {
-        const item = data[key];
-        const div = document.createElement('div');
-        div.className = 'menu-item';
-        div.innerHTML = `
-          <span class="menu-name">${item.name}</span>
-          <span class="menu-status">
-            <input type="checkbox" ${item.available ? 'checked' : ''} onchange="toggleAvailability('${key}', this.checked)"/>
-          </span>
-        `;
-        menuList.appendChild(div);
-      }
-    });
-
-    window.toggleAvailability = function(key, isAvailable) {
-      update(ref(db, 'menus/' + key), { available: isAvailable });
-    };
-
-    window.toggleOffDay = function() {
-      const today = new Date().toISOString().split('T')[0];
-      set(ref(db, 'offdays/' + today), { status: true });
-      alert('Today marked as off day!');
+  <div class="slogan">No Rules. Just Bite. Repeat.</div>
+  <script>
+    function toggleOffDay() {
+      alert('Off day toggled! (Integrate Firebase to save state)');
     }
-
-    // Placeholder live data for total sold, sales and net profit
-    document.getElementById('total-sold').innerText = '126';
-    document.getElementById('gross-sales').innerText = 'RM 1,260.00';
-    document.getElementById('net-profit').innerText = 'RM 550.00';
-  </script></body>
+  </script>
+</body>
 </html>
