@@ -1,168 +1,190 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Snapbite Admin Panel</title>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";const firebaseConfig = {
-  apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
-  authDomain: "snapbite-admin.firebaseapp.com",
-  databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "snapbite-admin",
-  storageBucket: "snapbite-admin.appspot.com",
-  messagingSenderId: "146625734660",
-  appId: "1:146625734660:web:23ada593e4818ed7332d51"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const menuContainer = document.getElementById("menuContainer");
-const offdayToggle = document.getElementById("offdayToggle");
-const grossOutput = document.getElementById("grossSales");
-const netOutput = document.getElementById("netProfit");
-const totalOutput = document.getElementById("totalSales");
-
-function loadMenu() {
-  const menuRef = ref(db, "menu");
-  onValue(menuRef, (snapshot) => {
-    const data = snapshot.val();
-    menuContainer.innerHTML = "";
-    let total = 0, gross = 0, net = 0;
-    for (const id in data) {
-      const item = data[id];
-      const itemDiv = document.createElement("div");
-      itemDiv.className = "item";
-      itemDiv.innerHTML = `
-        <div class="label">${item.name} (${item.category})</div>
-        <label class="switch">
-          <input type="checkbox" ${item.available ? "checked" : ""} onchange="toggleItem('${id}', this.checked)">
-          <span class="slider"></span>
-        </label>
-      `;
-      menuContainer.appendChild(itemDiv);
-
-      if (item.sold) total += item.sold;
-      if (item.gross) gross += item.gross;
-      if (item.net) net += item.net;
-    }
-    totalOutput.innerText = total;
-    grossOutput.innerText = `RM ${gross.toFixed(2)}`;
-    netOutput.innerText = `RM ${net.toFixed(2)}`;
-  });
-}
-
-window.toggleItem = function(id, status) {
-  const itemRef = ref(db, `menu/${id}`);
-  update(itemRef, { available: status });
-}
-
-offdayToggle.addEventListener("change", () => {
-  const dayRef = ref(db, `status`);
-  update(dayRef, { offday: offdayToggle.checked });
-});
-
-loadMenu();
-
-  </script>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
-      background: #111;
-      color: #f5c542;
+      background: #0d0d0d;
+      color: #fff;
+      margin: 0;
       padding: 2rem;
     }
-    h1 { text-align: center; color: #fff; }
-    .summary {
+    h1 {
+      text-align: center;
+      color: gold;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    .status-bar {
       display: flex;
       justify-content: space-between;
+      flex-wrap: wrap;
       gap: 1rem;
       margin-bottom: 2rem;
     }
-    .card {
-      background: #222;
+    .status-card {
+      flex: 1 1 30%;
+      background: #1a1a1a;
       padding: 1rem;
+      border: 1px solid #333;
       border-radius: 10px;
-      flex: 1;
       text-align: center;
     }
-    .card h3 { color: #f5c542; }
-    .item {
+    .status-card h2 {
+      color: #ffcc00;
+      margin-bottom: 0.5rem;
+    }
+    .menu-item {
+      background: #1a1a1a;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 10px;
+      border: 1px solid #333;
+    }
+    .menu-header {
       display: flex;
       justify-content: space-between;
-      background: #1e1e1e;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      align-items: center;
     }
-    .label { font-weight: 600; }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 40px;
-      height: 20px;
-    }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0;
-      right: 0; bottom: 0;
-      background-color: #ccc;
-      border-radius: 20px;
-      transition: .4s;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 16px;
-      width: 16px;
-      left: 2px;
-      bottom: 2px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: #f5c542;
-    }
-    input:checked + .slider:before {
-      transform: translateX(20px);
-    }
-    .offday-container {
-      margin-bottom: 2rem;
+    .toggle {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    input[type="checkbox"] {
+      transform: scale(1.5);
+    }
+    .offday-toggle {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .offday-toggle label {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #888;
     }
   </style>
 </head>
 <body>
   <h1>Snapbite™ Admin Panel</h1>
-  <div class="offday-container">
-    <label><strong>Offday</strong></label>
-    <label class="switch">
-      <input type="checkbox" id="offdayToggle">
-      <span class="slider"></span>
-    </label>
-  </div>  <div class="summary">
-    <div class="card">
-      <h3>Total Items Sold</h3>
-      <p id="totalSales">0</p>
-    </div>
-    <div class="card">
-      <h3>Gross Sales</h3>
-      <p id="grossSales">RM 0.00</p>
-    </div>
-    <div class="card">
-      <h3>Net Profit</h3>
-      <p id="netProfit">RM 0.00</p>
-    </div>
-  </div>  <div id="menuContainer"></div>
-</body>
+  <div class="container">
+    <div class="offday-toggle">
+      <label for="offday">Offday:</label>
+      <input type="checkbox" id="offday" />
+    </div><div class="status-bar">
+  <div class="status-card">
+    <h2>Gross Sales</h2>
+    <p id="grossSales">RM0.00</p>
+  </div>
+  <div class="status-card">
+    <h2>Net Sales</h2>
+    <p id="netSales">RM0.00</p>
+  </div>
+  <div class="status-card">
+    <h2>Total Items Sold</h2>
+    <p id="totalSold">0</p>
+  </div>
+</div>
+
+<div id="menuList"></div>
+
+<footer>
+  Snapbite™ System | No Rules. Just Bite. Repeat.
+</footer>
+
+  </div>  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js';
+    import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
+      authDomain: "snapbite-admin.firebaseapp.com",
+      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "snapbite-admin",
+      storageBucket: "snapbite-admin.appspot.com",
+      messagingSenderId: "146625734660",
+      appId: "1:146625734660:web:23ada593e4818ed7332d51",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const menuRef = ref(db, 'menu');
+    const offdayRef = ref(db, 'offday');
+
+    const menuList = document.getElementById('menuList');
+    const offdayToggle = document.getElementById('offday');
+
+    offdayToggle.addEventListener('change', () => {
+      update(ref(db), { offday: offdayToggle.checked });
+    });
+
+    onValue(offdayRef, (snapshot) => {
+      if (snapshot.exists()) {
+        offdayToggle.checked = snapshot.val();
+      }
+    });
+
+    onValue(menuRef, (snapshot) => {
+      menuList.innerHTML = '';
+      let totalSold = 0;
+      let gross = 0;
+      let net = 0;
+
+      snapshot.forEach((childSnapshot) => {
+        const item = childSnapshot.val();
+        const key = childSnapshot.key;
+
+        const div = document.createElement('div');
+        div.className = 'menu-item';
+
+        const header = document.createElement('div');
+        header.className = 'menu-header';
+
+        const title = document.createElement('strong');
+        title.textContent = `${item.name}`;
+
+        const toggle = document.createElement('div');
+        toggle.className = 'toggle';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = item.available;
+        checkbox.addEventListener('change', () => {
+          update(ref(db, `menu/${key}`), { available: checkbox.checked });
+        });
+        toggle.appendChild(checkbox);
+
+        header.appendChild(title);
+        header.appendChild(toggle);
+        div.appendChild(header);
+
+        const sold = item.sold || 0;
+        const grossItem = item.gross || 0;
+        const netItem = item.net || 0;
+
+        totalSold += sold;
+        gross += grossItem;
+        net += netItem;
+
+        const stats = document.createElement('p');
+        stats.innerHTML = `Sold: ${sold} | Gross: RM${grossItem.toFixed(2)} | Net: RM${netItem.toFixed(2)}`;
+        div.appendChild(stats);
+
+        menuList.appendChild(div);
+      });
+
+      document.getElementById('totalSold').textContent = totalSold;
+      document.getElementById('grossSales').textContent = `RM${gross.toFixed(2)}`;
+      document.getElementById('netSales').textContent = `RM${net.toFixed(2)}`;
+    });
+  </script></body>
 </html>
