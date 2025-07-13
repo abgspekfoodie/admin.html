@@ -3,136 +3,115 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Snapbite Admin Panel</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(to bottom, #000, #1a1a1a);
-      color: #f1f1f1;
+      background: #121212;
+      color: #fff;
     }
     header {
-      background-color: #111;
-      color: gold;
+      background: linear-gradient(90deg, #ffcc00, #cc00ff);
       padding: 1rem;
       text-align: center;
       font-size: 1.5rem;
-      font-weight: 600;
-      letter-spacing: 1px;
+      font-weight: bold;
     }
-    .container {
+    main {
       padding: 2rem;
-      max-width: 1000px;
+      max-width: 900px;
       margin: auto;
     }
-    .menu-item {
-      background: #222;
-      padding: 1rem;
-      margin-bottom: 1rem;
+    .section {
+      background: #1f1f1f;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
     }
-    .menu-item h3 {
-      margin: 0 0 0.5rem 0;
-      color: #ffd700;
+    .section h2 {
+      margin-top: 0;
+      color: #ffcc00;
+    }
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+      padding: 0.5rem 0;
     }
     .toggle {
-      display: flex;
-      align-items: center;
-    }
-    .toggle input[type="checkbox"] {
-      margin-right: 10px;
       transform: scale(1.3);
     }
-    .status {
-      margin-top: 0.3rem;
-      color: #aaa;
-      font-size: 0.9rem;
+    .off-day-toggle {
+      margin-top: 1rem;
     }
-    .dashboard {
-      background: #1a1a1a;
-      padding: 1.5rem;
-      margin-top: 2rem;
-      border: 1px solid #333;
-      border-radius: 10px;
-    }
-    .dashboard h2 {
-      color: gold;
-      margin-bottom: 1rem;
-    }
-    .dashboard .data {
+    .summary {
       display: flex;
+      justify-content: space-around;
       flex-wrap: wrap;
       gap: 1.5rem;
     }
-    .dashboard .data .box {
-      background: #2a2a2a;
+    .summary-box {
+      background: #292929;
+      border-radius: 8px;
       padding: 1rem;
-      border-radius: 10px;
-      flex: 1;
-      min-width: 200px;
       text-align: center;
-      color: #fff;
+      flex: 1 1 200px;
     }
-    .box span {
-      display: block;
-      font-size: 1.3rem;
+    .summary-box h3 {
+      margin-bottom: 0.5rem;
+      color: #cc00ff;
+    }
+    button {
+      background: #ffcc00;
+      color: #000;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 5px;
       font-weight: bold;
-      margin-top: 0.5rem;
-      color: gold;
-    }
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.9rem;
-      color: #666;
-    }
-    .offday {
-      margin-top: 2rem;
-      text-align: center;
-    }
-    .offday input {
-      transform: scale(1.3);
-      margin-right: 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <header>
-    Snapbite™ Admin Panel — No Rules. Just Bite. Repeat.
-  </header>
-  <div class="container">
-    <div class="dashboard">
-      <h2>Sales Summary</h2>
-      <div class="data">
-        <div class="box">
-          Daily Sales
-          <span id="dailySales">RM 0.00</span>
-        </div>
-        <div class="box">
-          Weekly Sales
-          <span id="weeklySales">RM 0.00</span>
-        </div>
-        <div class="box">
-          Monthly PNL
-          <span id="monthlyPNL">RM 0.00</span>
-        </div>
-        <div class="box">
-          Total Items Sold
-          <span id="totalSold">0</span>
-        </div>
-      </div>
-    </div><div id="menuList"></div>
-
-<div class="offday">
-  <label><input type="checkbox" id="toggleOffday"> Mark Today as Off Day</label>
+  <header>Snapbite Admin Panel</header>
+  <main>
+    <div class="section">
+      <h2>Off Day Control</h2>
+      <label>
+        <input type="checkbox" id="offDayToggle" class="toggle" /> Enable Off Day
+      </label>
+    </div><div class="section">
+  <h2>Menu Availability</h2>
+  <div id="menuList"></div>
 </div>
 
-  </div>  <footer>
-    Snapbite™ Admin &mdash; Powered by Firebase | abgspekfoodie@gmail.com
-  </footer>  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-    import { getDatabase, ref, get, onValue, set, update } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
+<div class="section">
+  <h2>Sales Summary</h2>
+  <div class="summary">
+    <div class="summary-box">
+      <h3>Total Orders</h3>
+      <div id="totalOrders">0</div>
+    </div>
+    <div class="summary-box">
+      <h3>Total Items Sold</h3>
+      <div id="totalItems">0</div>
+    </div>
+    <div class="summary-box">
+      <h3>Gross Sales (RM)</h3>
+      <div id="grossSales">0.00</div>
+    </div>
+    <div class="summary-box">
+      <h3>Net Profit (RM)</h3>
+      <div id="netProfit">0.00</div>
+    </div>
+  </div>
+</div>
+
+  </main>  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getDatabase, ref, get, set, onValue, update } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
@@ -148,34 +127,68 @@
     const db = getDatabase(app);
 
     const menuRef = ref(db, 'menu');
+    const offDayRef = ref(db, 'offDay');
+    const ordersRef = ref(db, 'orders');
 
-    onValue(menuRef, (snapshot) => {
+    // Load Off Day toggle
+    const offDayToggle = document.getElementById('offDayToggle');
+    onValue(offDayRef, snapshot => {
+      const val = snapshot.val();
+      offDayToggle.checked = val === true;
+    });
+
+    offDayToggle.addEventListener('change', () => {
+      set(offDayRef, offDayToggle.checked);
+    });
+
+    // Load Menu List
+    const menuListDiv = document.getElementById('menuList');
+    onValue(menuRef, snapshot => {
       const data = snapshot.val();
-      const menuList = document.getElementById('menuList');
-      menuList.innerHTML = '';
-      Object.keys(data).forEach(key => {
+      menuListDiv.innerHTML = '';
+      for (const key in data) {
         const item = data[key];
         const div = document.createElement('div');
         div.className = 'menu-item';
         div.innerHTML = `
-          <h3>${item.name}</h3>
-          <div class="toggle">
-            <input type="checkbox" id="${key}" ${item.available ? 'checked' : ''}>
-            <label for="${key}">${item.available ? 'Available' : 'Sold Out'}</label>
-          </div>
-          <div class="status">Category: ${item.category}</div>
+          <span>${item.name}</span>
+          <label><input type="checkbox" ${item.available ? 'checked' : ''} data-id="${key}" class="toggle" /></label>
         `;
-        const checkbox = div.querySelector('input');
-        checkbox.addEventListener('change', () => {
-          update(ref(db, `menu/${key}`), { available: checkbox.checked });
-          checkbox.nextElementSibling.innerText = checkbox.checked ? 'Available' : 'Sold Out';
-        });
-        menuList.appendChild(div);
-      });
+        menuListDiv.appendChild(div);
+      }
     });
 
-    document.getElementById('toggleOffday').addEventListener('change', (e) => {
-      set(ref(db, 'offday'), e.target.checked);
+    menuListDiv.addEventListener('change', (e) => {
+      const id = e.target.dataset.id;
+      const available = e.target.checked;
+      update(ref(db, 'menu/' + id), { available });
     });
+
+    // Load Sales Data
+    function loadSalesSummary() {
+      onValue(ordersRef, snapshot => {
+        const data = snapshot.val();
+        let totalOrders = 0;
+        let totalItems = 0;
+        let gross = 0;
+        let cost = 0;
+
+        for (const orderId in data) {
+          const order = data[orderId];
+          totalOrders++;
+          for (const item of order.items || []) {
+            totalItems++;
+            gross += parseFloat(item.price || 0);
+            cost += parseFloat(item.cost || 0);
+          }
+        }
+
+        document.getElementById('totalOrders').textContent = totalOrders;
+        document.getElementById('totalItems').textContent = totalItems;
+        document.getElementById('grossSales').textContent = gross.toFixed(2);
+        document.getElementById('netProfit').textContent = (gross - cost).toFixed(2);
+      });
+    }
+    loadSalesSummary();
   </script></body>
 </html>
