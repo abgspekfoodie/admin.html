@@ -1,137 +1,158 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Snapbite Admin Panel</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0e0e0e;
-      color: #f0c040;
-      margin: 0;
-      padding: 2rem;
-    }
-    h1 {
-      text-align: center;
-      color: #f9d342;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: #1a1a1a;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
-    }
-    .menu-item {
-      background: #222;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .menu-item h3 {
-      margin: 0;
-      font-size: 1.2rem;
-      color: #fff;
-    }
-    .toggle {
-      display: flex;
-      align-items: center;
-    }
-    .toggle label {
-      margin-right: 0.5rem;
-      color: #ccc;
-    }
-    input[type="checkbox"] {
-      transform: scale(1.4);
-      cursor: pointer;
-    }
-    #offdayBtn {
-      margin-top: 2rem;
-      display: block;
-      width: 100%;
-      padding: 1rem;
-      font-size: 1rem;
-      background: #f0c040;
-      color: #000;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Snapbite Admin</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background-color: #2f2f2f;
+            color: #fff;
+        }
+        h1 {
+            color: #ff9500;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .menu-item, .status-toggle, .offday-toggle, .sales-summary, .button {
+            margin: 1rem 0;
+        }
+        .menu-item, .sales-summary {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .button {
+            padding: 12px 24px;
+            background-color: #ff9500;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+        .menu-item label, .sales-summary label {
+            font-weight: 600;
+        }
+        .status-toggle, .offday-toggle {
+            margin-top: 1rem;
+        }
+        .status-toggle label, .offday-toggle label {
+            display: block;
+            margin: 0.5rem 0;
+        }
+    </style>
 </head>
 <body>
-  <h1>Snapbite™ Admin Panel</h1>
-  <div class="container" id="menuContainer">
-    <!-- Menu items will be injected here -->
-  </div>
-  <button id="offdayBtn">Set All As Sold Out (Off Day)</button>  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+    <h1>Snapbite™ Admin Dashboard</h1>
+    <div class="container">
+        <!-- Toggle Available/Item 86 -->
+        <div class="status-toggle">
+            <label for="menu-status">Menu Availability Status:</label>
+            <select id="menu-status">
+                <option value="available">Available</option>
+                <option value="item-86">Item 86</option>
+            </select>
+        </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
-      authDomain: "snapbite-admin.firebaseapp.com",
-      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "snapbite-admin",
-      storageBucket: "snapbite-admin.appspot.com",
-      messagingSenderId: "146625734660",
-      appId: "1:146625734660:web:23ada593e4818ed7332d51"
-    };
+        <!-- Off Day Toggle -->
+        <div class="offday-toggle">
+            <label for="offday-status">Off Day:</label>
+            <input type="checkbox" id="offday-status">
+        </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+        <!-- Sales Summary -->
+        <div class="sales-summary">
+            <div><label>Total Sales: RM <span id="total-sales">0.00</span></label></div>
+            <div><label>Gross Profit: RM <span id="gross-profit">0.00</span></label></div>
+            <div><label>Net Profit: RM <span id="net-profit">0.00</span></label></div>
+        </div>
 
-    const container = document.getElementById("menuContainer");
+        <!-- Button to Save or Update Data -->
+        <button class="button" id="update-button">Update Sales</button>
+    </div>
 
-    function renderMenu(data) {
-      container.innerHTML = "";
-      for (const category in data) {
-        const items = data[category];
-        for (const key in items) {
-          const item = items[key];
-          const div = document.createElement("div");
-          div.className = "menu-item";
-          div.innerHTML = `
-            <h3>${item.name}</h3>
-            <div class="toggle">
-              <label>${item.available ? "Available" : "Sold Out"}</label>
-              <input type="checkbox" ${item.available ? "checked" : ""} onchange="toggleAvailability('${category}', '${key}', this.checked)" />
-            </div>
-          `;
-          container.appendChild(div);
-        }
-      }
-    }
+    <script>
+        const databaseURL = "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app/";
+        
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
+            authDomain: "snapbite-admin.firebaseapp.com",
+            databaseURL: databaseURL,
+            projectId: "snapbite-admin",
+            storageBucket: "snapbite-admin.firebasestorage.app",
+            messagingSenderId: "146625734660",
+            appId: "1:146625734660:web:23ada593e4818ed7332d51",
+            measurementId: "G-7RR3W1WJYK"
+        };
 
-    window.toggleAvailability = function (category, key, status) {
-      update(ref(db, `menu/${category}/${key}`), {
-        available: status
-      });
-    };
+        // Firebase initialization
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    onValue(ref(db, "menu"), (snapshot) => {
-      const data = snapshot.val();
-      if (data) renderMenu(data);
-    });
+        // Fetch menu data
+        db.ref('menu').on('value', snapshot => {
+            const menuData = snapshot.val();
+            if (menuData) {
+                let totalSales = 0;
+                let grossProfit = 0;
+                let netProfit = 0;
 
-    document.getElementById("offdayBtn").addEventListener("click", () => {
-      onValue(ref(db, "menu"), (snapshot) => {
-        const data = snapshot.val();
-        const updates = {};
-        for (const category in data) {
-          const items = data[category];
-          for (const key in items) {
-            updates[`menu/${category}/${key}/available`] = false;
-          }
-        }
-        update(ref(db), updates);
-        alert("All items marked as Sold Out.");
-      }, { onlyOnce: true });
-    });
-  </script></body>
+                // Update menu availability status and sales summary
+                Object.entries(menuData).forEach(([menuName, menuDetails]) => {
+                    const { price, available, sales } = menuDetails;
+
+                    totalSales += price * sales;
+                    grossProfit += (price * sales) - (menuDetails.cost * sales);
+                    netProfit += grossProfit - (sales * menuDetails.operationalCosts);
+
+                    const menuItemDiv = document.createElement('div');
+                    menuItemDiv.classList.add('menu-item');
+                    menuItemDiv.innerHTML = `
+                        <label>${menuName} (${available ? 'Available' : 'Item 86'})</label>
+                        <div>Sold: ${sales}</div>
+                    `;
+                    document.body.appendChild(menuItemDiv);
+                });
+
+                // Update sales summary
+                document.getElementById("total-sales").textContent = totalSales.toFixed(2);
+                document.getElementById("gross-profit").textContent = grossProfit.toFixed(2);
+                document.getElementById("net-profit").textContent = netProfit.toFixed(2);
+            }
+        });
+
+        // Handle toggle and update button actions
+        document.getElementById("update-button").addEventListener("click", () => {
+            const selectedStatus = document.getElementById("menu-status").value;
+            const isOffDay = document.getElementById("offday-status").checked;
+
+            // Update Firebase with changes
+            db.ref('settings').update({
+                menuStatus: selectedStatus,
+                offDay: isOffDay
+            });
+
+            alert("Data updated successfully!");
+        });
+    </script>
+</body>
 </html>
