@@ -1,53 +1,94 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snapbite Admin Panel</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snapbite™ Admin Panel</title>
   <style>
-    body { font-family: 'Poppins', sans-serif; background: #121212; color: #fff; margin: 0; padding: 2rem; }
-    h1 { text-align: center; color: #ffa500; }
-    .menu-table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
-    .menu-table th, .menu-table td {
-      padding: 12px; border: 1px solid #333; text-align: left;
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1c1c1c, #2a2a2a);
+      color: #fff;
+      margin: 0;
+      padding: 0;
     }
-    .menu-table th { background: #222; }
-    .toggle-btn {
-      padding: 6px 12px; background: #ffa500; color: #000;
-      border: none; border-radius: 4px; cursor: pointer;
+    header {
+      background: #000;
+      padding: 1rem;
+      text-align: center;
+      color: #ffcc00;
+      font-size: 1.5rem;
+      font-weight: bold;
     }
-    .profit-box {
-      margin-top: 2rem;
-      background: #1e1e1e;
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    .menu-category {
+      background: #222;
+      margin-bottom: 1.5rem;
       padding: 1rem;
       border-radius: 8px;
+    }
+    .menu-category h2 {
+      color: #ffcc00;
+      margin-top: 0;
+    }
+    .menu-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      background: #333;
+      padding: 0.75rem;
+      border-radius: 6px;
+    }
+    .menu-item input[type="text"],
+    .menu-item input[type="number"] {
+      width: 100px;
+      margin-left: 0.5rem;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .summary {
+      background: #111;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 2rem;
+    }
+    .summary h3 {
+      margin-top: 0;
+      color: #ffcc00;
+    }
+    button {
+      background: #ffcc00;
+      border: none;
+      color: #000;
+      font-weight: bold;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>Snapbite™ Admin Panel</h1>
-  <div id="menu-section">
-    <table class="menu-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Category</th>
-          <th>Price (RM)</th>
-          <th>Cost (RM)</th>
-          <th>Available</th>
-          <th>Toggle</th>
-        </tr>
-      </thead>
-      <tbody id="menu-list">
-        <!-- JS populated rows -->
-      </tbody>
-    </table>
-  </div>  <div class="profit-box">
+  <header>Snapbite™ Admin Panel - No Rules. Just Bite. Repeat.</header>
+  <div class="container" id="admin-panel">
+    <!-- Menu categories will be rendered here -->
+  </div>
+  <div class="container summary">
     <h3>Profit Summary</h3>
-    <p><strong>Gross Profit:</strong> RM <span id="gross-profit">0.00</span></p>
-    <p><strong>Net Profit (30% margin):</strong> RM <span id="net-profit">0.00</span></p>
+    <p>Total Gross Profit: <span id="gross-profit">RM 0.00</span></p>
+    <p>Total Net Profit: <span id="net-profit">RM 0.00</span></p>
+    <button onclick="calculateProfit()">Recalculate Profit</button>
   </div>  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-    import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
@@ -62,43 +103,67 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const menuRef = ref(db, 'menu');
-    const menuList = document.getElementById('menu-list');
-    let grossProfit = 0;
+    const categories = {
+      "Beef Series": ["Primebite", "Beef N' Cheese", "The Fun Guy", "The Fixer"],
+      "Chicken Series": ["Chickbite", "Goldcut", "The Cap Cut", "Stripstack"],
+      "Tex-Mex Tacos": ["Smoke Beef Taco", "Smokey Chop Taco", "Mix Taco"],
+      "Tex-Mex Quesadilla": ["Smoke Beef Quesadilla", "Smoke Chicken Quesadilla", "Mix Quesadilla"],
+      "Sausage Series": ["Classic Sausage", "Chickola"],
+      "Add-Ons": ["Egg", "Cheese", "Mushroom", "Bacon"]
+    };
 
-    onValue(menuRef, (snapshot) => {
-      const data = snapshot.val();
-      menuList.innerHTML = '';
-      grossProfit = 0;
+    const renderMenu = () => {
+      const panel = document.getElementById("admin-panel");
+      for (let [cat, items] of Object.entries(categories)) {
+        const div = document.createElement("div");
+        div.className = "menu-category";
+        div.innerHTML = `<h2>${cat}</h2>`;
 
-      for (let key in data) {
-        const item = data[key];
-        const profit = parseFloat(item.price) - parseFloat(item.cost);
-        grossProfit += profit;
+        items.forEach(item => {
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "menu-item";
+          itemDiv.innerHTML = `
+            <strong>${item}</strong>
+            <div class="toggle">
+              <label>Available:</label>
+              <input type="checkbox" data-item="${item}" onchange="toggleItem('${cat}','${item}', this.checked)" />
+            </div>
+            <div>
+              <label>Cost:</label>
+              <input type="number" id="${item}-cost" placeholder="RM" step="0.01">
+            </div>
+            <div>
+              <label>Price:</label>
+              <input type="number" id="${item}-price" placeholder="RM" step="0.01">
+            </div>
+          `;
+          div.appendChild(itemDiv);
+        });
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${item.name}</td>
-          <td>${item.category || '-'}</td>
-          <td>${parseFloat(item.price).toFixed(2)}</td>
-          <td>${parseFloat(item.cost).toFixed(2)}</td>
-          <td>${item.available ? 'Yes' : 'No'}</td>
-          <td><button class="toggle-btn" data-id="${key}" data-status="${item.available}">${item.available ? 'Disable' : 'Enable'}</button></td>
-        `;
-        menuList.appendChild(row);
+        panel.appendChild(div);
       }
+    };
 
-      document.getElementById('gross-profit').innerText = grossProfit.toFixed(2);
-      document.getElementById('net-profit').innerText = (grossProfit * 0.3).toFixed(2);
-    });
+    window.toggleItem = function(category, item, isAvailable) {
+      update(ref(db, `menu/${category}/${item}`), { available: isAvailable });
+    }
 
-    document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('toggle-btn')) {
-        const id = e.target.dataset.id;
-        const current = e.target.dataset.status === 'true';
-        const updateRef = ref(db, 'menu/' + id);
-        update(updateRef, { available: !current });
+    window.calculateProfit = function() {
+      let gross = 0, net = 0;
+      for (let items of Object.values(categories)) {
+        items.forEach(item => {
+          const c = parseFloat(document.getElementById(`${item}-cost`)?.value || 0);
+          const p = parseFloat(document.getElementById(`${item}-price`)?.value || 0);
+          if (p > 0 && c >= 0) {
+            gross += p;
+            net += (p - c);
+          }
+        });
       }
-    });
+      document.getElementById("gross-profit").innerText = `RM ${gross.toFixed(2)}`;
+      document.getElementById("net-profit").innerText = `RM ${net.toFixed(2)}`;
+    }
+
+    renderMenu();
   </script></body>
 </html>
