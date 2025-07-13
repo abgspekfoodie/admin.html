@@ -1,178 +1,234 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Snapbite™ Admin Panel</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: #eee;
-      margin: 0; padding: 1rem;
-      max-width: 900px;
-      margin-left: auto; margin-right: auto;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d0d0d;
+      color: #f0f0f0;
+      margin: 0;
+      padding: 1rem;
+      max-width: 1000px;
+      margin: auto;
     }
-    h1 { color: #ff9500; text-align: center; margin-bottom: 1rem; }
+    h1, h2 {
+      color: #ff9500;
+      text-align: center;
+    }
     .section {
-      background: #1e1e1e;
-      padding: 1rem 1.2rem;
-      border-radius: 10px;
-      margin-bottom: 1.5rem;
+      background: #1c1c1c;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
-    .toggle-switch {
+    .toggle-row {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 1rem;
     }
-    .toggle-switch input[type="checkbox"] {
-      width: 40px; height: 20px;
-      appearance: none; background: #333; border-radius: 20px;
-      position: relative; outline: none; transition: background 0.3s; cursor: pointer;
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
     }
-    .toggle-switch input[type="checkbox"]:checked { background: #ff9500; }
-    .toggle-switch input[type="checkbox"]::before {
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
       content: "";
-      position: absolute; width: 18px; height: 18px;
-      border-radius: 50%; top: 1px; left: 1px; background: #fff;
-      transition: 0.3s;
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
     }
-    .toggle-switch input[type="checkbox"]:checked::before { left: 21px; }
+    input:checked + .slider {
+      background-color: #ff9500;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
     table {
-      width: 100%; border-collapse: collapse; margin-top: 0.7rem;
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
     }
     th, td {
-      border: 1px solid #444; padding: 8px 12px; text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+      text-align: left;
     }
-    th { background: #222; }
-    .available { color: #00ff00; font-weight: bold; }
-    .unavailable { color: #ff3b3b; font-weight: bold; }
+    th {
+      background: #262626;
+    }
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
     .report-box {
-      background: #222; border-radius: 10px; padding: 1rem;
-      margin: 0.5rem 0;
+      background: #262626;
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
     }
-    .report-box h3 { color: #ff9500; margin-top: 0; }
-    .loading { text-align: center; font-style: italic; margin-top: 1rem; }
-    .archive-table { font-size: 0.9rem; }
+    .report-box h3 {
+      margin: 0;
+      color: #ff9500;
+      font-size: 1rem;
+    }
+    .report-box p {
+      margin: 0.5rem 0 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    canvas {
+      margin-top: 2rem;
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 1rem;
+    }
   </style>
 </head>
 <body>
+  <h1>Snapbite™ Admin Panel</h1>  <div class="section">
+    <div class="toggle-row">
+      <h2>Shop Status</h2>
+      <label class="switch">
+        <input type="checkbox" id="offdayToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <p id="offdayLabel">Checking status...</p>
+  </div>  <div class="section">
+    <h2>Sales Report</h2>
+    <div class="report-grid">
+      <div class="report-box">
+        <h3>Gross Total</h3>
+        <p id="grossTotal">RM 0.00</p>
+      </div>
+      <div class="report-box">
+        <h3>Net Total</h3>
+        <p id="netTotal">RM 0.00</p>
+      </div>
+      <div class="report-box">
+        <h3>Gross Profit</h3>
+        <p id="grossProfit">RM 0.00</p>
+      </div>
+      <div class="report-box">
+        <h3>Net Profit</h3>
+        <p id="netProfit">RM 0.00</p>
+      </div>
+    </div>
+    <canvas id="salesChart" height="100"></canvas>
+  </div>  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
+      authDomain: "snapbite-admin.firebaseapp.com",
+      databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "snapbite-admin",
+      storageBucket: "snapbite-admin.appspot.com",
+      messagingSenderId: "146625734660",
+      appId: "1:146625734660:web:23ada593e4818ed7332d51"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-<h1>Snapbite™ Admin Panel</h1>
+    const offdayToggle = document.getElementById('offdayToggle');
+    const offdayLabel = document.getElementById('offdayLabel');
 
-<div class="section">
-  <h2>Shop Status</h2>
-  <div class="toggle-switch">
-    <input type="checkbox" id="offdayToggle" />
-    <label for="offdayToggle" id="offdayLabel">Shop is OPEN</label>
-  </div>
-</div>
+    db.ref('settings/offday').on('value', snap => {
+      const val = snap.val();
+      offdayToggle.checked = !!val;
+      updateOffdayLabel();
+    });
 
-<div class="section">
-  <h2>Add-on Availability</h2>
-  <div class="toggle-switch">
-    <input type="checkbox" id="addon-cheese" /> <label for="addon-cheese">Cheese</label>
-    <input type="checkbox" id="addon-egg" /> <label for="addon-egg">Egg</label>
-    <input type="checkbox" id="addon-bacon" /> <label for="addon-bacon">Bacon</label>
-  </div>
-</div>
+    offdayToggle.addEventListener('change', () => {
+      const status = offdayToggle.checked;
+      db.ref('settings/offday').set(status).then(updateOffdayLabel);
+    });
 
-<div class="section">
-  <h2>Sales Report (Today)</h2>
-  <div class="report-box">
-    <h3>Total Sales</h3>
-    <p id="todayTotal">RM 0.00</p>
-  </div>
-  <div class="loading" id="salesLoading">Loading sales data...</div>
-</div>
-
-<div class="section">
-  <h2>Order Archive</h2>
-  <table class="archive-table">
-    <thead><tr><th>Name</th><th>Time</th><th>Total (RM)</th></tr></thead>
-    <tbody id="archiveBody"><tr><td colspan="3">Loading...</td></tr></tbody>
-  </table>
-</div>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
-    authDomain: "snapbite-admin.firebaseapp.com",
-    databaseURL: "https://snapbite-admin-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "snapbite-admin",
-    storageBucket: "snapbite-admin.appspot.com",
-    messagingSenderId: "146625734660",
-    appId: "1:146625734660:web:23ada593e4818ed7332d51"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  const offdayToggle = document.getElementById("offdayToggle");
-  const offdayLabel = document.getElementById("offdayLabel");
-  const todayTotal = document.getElementById("todayTotal");
-  const salesLoading = document.getElementById("salesLoading");
-  const archiveBody = document.getElementById("archiveBody");
-
-  // Offday toggle
-  db.ref("settings/offday").on("value", snap => {
-    const val = snap.val();
-    offdayToggle.checked = !!val;
-    updateOffdayLabel();
-  });
-  function updateOffdayLabel() {
-    if (offdayToggle.checked) {
-      offdayLabel.textContent = "Shop is CLOSED (Off Day)";
-      offdayLabel.style.color = "#ff3b3b";
-    } else {
-      offdayLabel.textContent = "Shop is OPEN";
-      offdayLabel.style.color = "#00ff00";
+    function updateOffdayLabel() {
+      offdayLabel.textContent = offdayToggle.checked ? "Shop is CLOSED (Off Day)" : "Shop is OPEN";
+      offdayLabel.style.color = offdayToggle.checked ? '#ff3b3b' : '#00ff00';
     }
-  }
-  offdayToggle.addEventListener("change", () => {
-    db.ref("settings/offday").set(offdayToggle.checked);
-  });
 
-  // Addon availability
-  ["cheese", "egg", "bacon"].forEach(id => {
-    const el = document.getElementById("addon-" + id);
-    db.ref("addons/" + id).on("value", snap => {
-      el.checked = !!snap.val();
-    });
-    el.addEventListener("change", () => {
-      db.ref("addons/" + id).set(el.checked);
-    });
-  });
+    // Sales Report (simple version)
+    async function loadSalesReport() {
+      const grossTotalEl = document.getElementById("grossTotal");
+      const netTotalEl = document.getElementById("netTotal");
+      const grossProfitEl = document.getElementById("grossProfit");
+      const netProfitEl = document.getElementById("netProfit");
 
-  // Sales Report - today only
-  function isToday(dateStr) {
-    const d = new Date(dateStr);
-    const now = new Date();
-    return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }
+      const snapshot = await db.ref("orders").once("value");
+      const orders = snapshot.val() || {};
+      let gross = 0, net = 0, gp = 0, np = 0;
 
-  db.ref("orders").on("value", snap => {
-    const data = snap.val() || {};
-    let totalToday = 0;
-    archiveBody.innerHTML = "";
-    const rows = [];
+      for (const id in orders) {
+        const o = orders[id];
+        const t = parseFloat(o.total || 0);
+        gross += t;
+        gp += t * 0.3;
+      }
+      net = gross;
+      np = gp;
+      grossTotalEl.textContent = `RM ${gross.toFixed(2)}`;
+      netTotalEl.textContent = `RM ${net.toFixed(2)}`;
+      grossProfitEl.textContent = `RM ${gp.toFixed(2)}`;
+      netProfitEl.textContent = `RM ${np.toFixed(2)}`;
+    }
 
-    Object.values(data).reverse().forEach(o => {
-      const t = new Date(o.time || "");
-      const timeStr = t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const dateStr = t.toLocaleDateString();
+    // Chart with dummy daily data (replace with real order dates if needed)
+    function renderChart() {
+      const ctx = document.getElementById('salesChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          datasets: [{
+            label: 'Daily Sales',
+            data: [120, 90, 130, 160, 200, 300, 180],
+            backgroundColor: '#ff9500'
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
 
-      if (isToday(o.time)) totalToday += o.total || 0;
-
-      rows.push(`<tr><td>${o.name || "-"}</td><td>${dateStr} ${timeStr}</td><td>${(o.total || 0).toFixed(2)}</td></tr>`);
-    });
-
-    todayTotal.textContent = "RM " + totalToday.toFixed(2);
-    archiveBody.innerHTML = rows.join("\n");
-    salesLoading.style.display = "none";
-  });
-</script>
-
-</body>
+    loadSalesReport();
+    renderChart();
+  </script></body>
 </html>
