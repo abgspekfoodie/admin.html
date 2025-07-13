@@ -1,145 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Snapbite™ Admin Panel</title>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #121212;
-    color: #eee;
-    margin: 0; padding: 1rem;
-    max-width: 900px;
-    margin-left: auto; margin-right: auto;
-  }
-  h1 {
-    color: #ff9500;
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  .section {
-    background: #1e1e1e;
-    padding: 1rem 1.2rem;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
-  }
-  .toggle-switch {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  .toggle-switch input[type="checkbox"] {
-    width: 40px;
-    height: 20px;
-    position: relative;
-    appearance: none;
-    background: #333;
-    outline: none;
-    border-radius: 20px;
-    transition: background 0.3s;
-    cursor: pointer;
-  }
-  .toggle-switch input[type="checkbox"]:checked {
-    background: #ff9500;
-  }
-  .toggle-switch input[type="checkbox"]::before {
-    content: "";
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    top: 1px;
-    left: 1px;
-    background: #fff;
-    transition: 0.3s;
-  }
-  .toggle-switch input[type="checkbox"]:checked::before {
-    left: 21px;
-  }
-  label {
-    user-select: none;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 0.7rem;
-  }
-  th, td {
-    border: 1px solid #444;
-    padding: 8px 12px;
-    text-align: left;
-    font-size: 0.95rem;
-  }
-  th {
-    background: #222;
-  }
-  td button {
-    background: #ff3b3b;
-    border: none;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
-  td button:hover {
-    background: #ff5e5e;
-  }
-  .availability-toggle {
-    cursor: pointer;
-    user-select: none;
-  }
-  .available {
-    color: #00ff00;
-    font-weight: bold;
-  }
-  .unavailable {
-    color: #ff3b3b;
-    font-weight: bold;
-  }
-  .sales-report {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  .report-box {
-    flex: 1 1 160px;
-    background: #222;
-    padding: 1rem;
-    border-radius: 10px;
-    text-align: center;
-  }
-  .report-box h3 {
-    margin-top: 0;
-    color: #ff9500;
-    font-size: 1.2rem;
-  }
-  .report-box p {
-    font-size: 1.5rem;
-    margin: 0.3rem 0 0;
-    font-weight: bold;
-  }
-  .loading {
-    text-align: center;
-    font-style: italic;
-    margin-top: 1rem;
-  }
-  @media (max-width: 600px) {
-    th, td {
-      font-size: 0.85rem;
-      padding: 6px 8px;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Snapbite™ Admin Panel</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #eee;
+      margin: 0; padding: 1rem;
+      max-width: 900px;
+      margin-left: auto; margin-right: auto;
     }
-  }
-</style>
+    h1 { color: #ff9500; text-align: center; margin-bottom: 1rem; }
+    .section {
+      background: #1e1e1e;
+      padding: 1rem 1.2rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .toggle-switch input[type="checkbox"] {
+      width: 40px; height: 20px;
+      appearance: none; background: #333; border-radius: 20px;
+      position: relative; outline: none; transition: background 0.3s; cursor: pointer;
+    }
+    .toggle-switch input[type="checkbox"]:checked { background: #ff9500; }
+    .toggle-switch input[type="checkbox"]::before {
+      content: "";
+      position: absolute; width: 18px; height: 18px;
+      border-radius: 50%; top: 1px; left: 1px; background: #fff;
+      transition: 0.3s;
+    }
+    .toggle-switch input[type="checkbox"]:checked::before { left: 21px; }
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 0.7rem;
+    }
+    th, td {
+      border: 1px solid #444; padding: 8px 12px; text-align: left;
+    }
+    th { background: #222; }
+    .available { color: #00ff00; font-weight: bold; }
+    .unavailable { color: #ff3b3b; font-weight: bold; }
+    .report-box {
+      background: #222; border-radius: 10px; padding: 1rem;
+      margin: 0.5rem 0;
+    }
+    .report-box h3 { color: #ff9500; margin-top: 0; }
+    .loading { text-align: center; font-style: italic; margin-top: 1rem; }
+    .archive-table { font-size: 0.9rem; }
+  </style>
 </head>
 <body>
 
 <h1>Snapbite™ Admin Panel</h1>
 
-<div class="section" id="offday-section">
+<div class="section">
   <h2>Shop Status</h2>
   <div class="toggle-switch">
     <input type="checkbox" id="offdayToggle" />
@@ -147,47 +70,33 @@
   </div>
 </div>
 
-<div class="section" id="menu-section">
-  <h2>Menu Availability</h2>
-  <table id="menuTable" aria-label="Menu availability table">
-    <thead>
-      <tr>
-        <th>Category</th>
-        <th>Menu Item</th>
-        <th>Available</th>
-      </tr>
-    </thead>
-    <tbody id="menuBody">
-      <tr><td colspan="3" class="loading">Loading menu data...</td></tr>
-    </tbody>
-  </table>
+<div class="section">
+  <h2>Add-on Availability</h2>
+  <div class="toggle-switch">
+    <input type="checkbox" id="addon-cheese" /> <label for="addon-cheese">Cheese</label>
+    <input type="checkbox" id="addon-egg" /> <label for="addon-egg">Egg</label>
+    <input type="checkbox" id="addon-bacon" /> <label for="addon-bacon">Bacon</label>
+  </div>
 </div>
 
-<div class="section" id="sales-section">
-  <h2>Sales Report</h2>
-  <div class="sales-report" id="salesReport">
-    <div class="report-box">
-      <h3>Gross Total</h3>
-      <p id="grossTotal">RM 0.00</p>
-    </div>
-    <div class="report-box">
-      <h3>Net Total</h3>
-      <p id="netTotal">RM 0.00</p>
-    </div>
-    <div class="report-box">
-      <h3>Gross Profit</h3>
-      <p id="grossProfit">RM 0.00</p>
-    </div>
-    <div class="report-box">
-      <h3>Net Profit</h3>
-      <p id="netProfit">RM 0.00</p>
-    </div>
+<div class="section">
+  <h2>Sales Report (Today)</h2>
+  <div class="report-box">
+    <h3>Total Sales</h3>
+    <p id="todayTotal">RM 0.00</p>
   </div>
   <div class="loading" id="salesLoading">Loading sales data...</div>
 </div>
 
+<div class="section">
+  <h2>Order Archive</h2>
+  <table class="archive-table">
+    <thead><tr><th>Name</th><th>Time</th><th>Total (RM)</th></tr></thead>
+    <tbody id="archiveBody"><tr><td colspan="3">Loading...</td></tr></tbody>
+  </table>
+</div>
+
 <script>
-  // Firebase config - update with your Firebase project config
   const firebaseConfig = {
     apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
     authDomain: "snapbite-admin.firebaseapp.com",
@@ -200,216 +109,69 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Menu data structure (category & items)
-  const menuData = {
-    "Beef": [
-      { id: "primebite", name: "Primebite™" },
-      { id: "beefncheese", name: "Beef N’ Cheese™" },
-      { id: "thefunguy", name: "The Fun Guy™" },
-      { id: "thefixer", name: "The Fixer™" }
-    ],
-    "Chicken": [
-      { id: "chickbite", name: "Chickbite™" },
-      { id: "goldcut", name: "Goldcut™" },
-      { id: "thecapcut", name: "The Cap Cut™" },
-      { id: "stripstack", name: "Stripstack™" }
-    ],
-    "Tex-Mex": [
-      { id: "smokebeeftaco", name: "Smoke Beef Taco™" },
-      { id: "smokeychickentaco", name: "Smokey Chicken Taco™" },
-      { id: "mixtaco", name: "Mix Taco™" },
-      { id: "smokebeequesadilla", name: "Smoke Beef Quesadilla™" },
-      { id: "smokechickenquesadilla", name: "Smoke Chicken Quesadilla™" },
-      { id: "mixquesadilla", name: "Mix Quesadilla™" }
-    ],
-    "Sausage": [
-      { id: "classicsausage", name: "Classic Sausage™" },
-      { id: "loadedsausage", name: "Loaded Sausage™" }
-    ]
-  };
+  const offdayToggle = document.getElementById("offdayToggle");
+  const offdayLabel = document.getElementById("offdayLabel");
+  const todayTotal = document.getElementById("todayTotal");
+  const salesLoading = document.getElementById("salesLoading");
+  const archiveBody = document.getElementById("archiveBody");
 
-  // Elements
-  const offdayToggle = document.getElementById('offdayToggle');
-  const offdayLabel = document.getElementById('offdayLabel');
-  const menuBody = document.getElementById('menuBody');
-  const grossTotalEl = document.getElementById('grossTotal');
-  const netTotalEl = document.getElementById('netTotal');
-  const grossProfitEl = document.getElementById('grossProfit');
-  const netProfitEl = document.getElementById('netProfit');
-  const salesLoading = document.getElementById('salesLoading');
-
-  // --- OFFDAY toggle ---
-
-  // Load offday status from DB and update toggle
-  function loadOffdayStatus() {
-    db.ref('settings/offday').once('value', snap => {
-      const val = snap.val();
-      offdayToggle.checked = !!val;
-      updateOffdayLabel();
-    });
-  }
+  // Offday toggle
+  db.ref("settings/offday").on("value", snap => {
+    const val = snap.val();
+    offdayToggle.checked = !!val;
+    updateOffdayLabel();
+  });
   function updateOffdayLabel() {
     if (offdayToggle.checked) {
-      offdayLabel.textContent = 'Shop is CLOSED (Off Day)';
-      offdayLabel.style.color = '#ff3b3b';
+      offdayLabel.textContent = "Shop is CLOSED (Off Day)";
+      offdayLabel.style.color = "#ff3b3b";
     } else {
-      offdayLabel.textContent = 'Shop is OPEN';
-      offdayLabel.style.color = '#00ff00';
+      offdayLabel.textContent = "Shop is OPEN";
+      offdayLabel.style.color = "#00ff00";
     }
   }
-  offdayToggle.addEventListener('change', () => {
-    const val = offdayToggle.checked;
-    db.ref('settings/offday').set(val)
-      .then(() => updateOffdayLabel())
-      .catch(() => alert('Failed to update shop status.'));
+  offdayToggle.addEventListener("change", () => {
+    db.ref("settings/offday").set(offdayToggle.checked);
   });
 
-  // --- Menu availability management ---
+  // Addon availability
+  ["cheese", "egg", "bacon"].forEach(id => {
+    const el = document.getElementById("addon-" + id);
+    db.ref("addons/" + id).on("value", snap => {
+      el.checked = !!snap.val();
+    });
+    el.addEventListener("change", () => {
+      db.ref("addons/" + id).set(el.checked);
+    });
+  });
 
-  // Load availability status for all menu items from DB, fallback to true (available)
-  async function loadMenuAvailability() {
-    menuBody.innerHTML = '<tr><td colspan="3" class="loading">Loading menu availability...</td></tr>';
-    const availSnapshot = await db.ref('menuAvailability').once('value');
-    const availData = availSnapshot.val() || {};
-
-    menuBody.innerHTML = '';
-    for (const category in menuData) {
-      for (const item of menuData[category]) {
-        const id = item.id;
-        const name = item.name;
-        const available = (availData[id] === undefined) ? true : !!availData[id];
-        const tr = document.createElement('tr');
-
-        // Category cell
-        const tdCat = document.createElement('td');
-        tdCat.textContent = category;
-        tr.appendChild(tdCat);
-
-        // Name cell
-        const tdName = document.createElement('td');
-        tdName.textContent = name;
-        tr.appendChild(tdName);
-
-        // Availability cell
-        const tdAvail = document.createElement('td');
-        const toggle = document.createElement('input');
-        toggle.type = 'checkbox';
-        toggle.checked = available;
-        toggle.className = 'availability-toggle';
-        toggle.dataset.menuId = id;
-        toggle.title = available ? 'Click to mark unavailable' : 'Click to mark available';
-
-        toggle.addEventListener('change', (e) => {
-          const checked = e.target.checked;
-          const menuId = e.target.dataset.menuId;
-          db.ref('menuAvailability/' + menuId).set(checked)
-            .then(() => {
-              e.target.title = checked ? 'Click to mark unavailable' : 'Click to mark available';
-              e.target.parentElement.classList.toggle('available', checked);
-              e.target.parentElement.classList.toggle('unavailable', !checked);
-            })
-            .catch(() => {
-              alert('Failed to update availability');
-              // revert checkbox
-              e.target.checked = !checked;
-            });
-        });
-
-        tdAvail.appendChild(toggle);
-        // Add class for color
-        tdAvail.classList.add(available ? 'available' : 'unavailable');
-        tr.appendChild(tdAvail);
-
-        menuBody.appendChild(tr);
-      }
-    }
+  // Sales Report - today only
+  function isToday(dateStr) {
+    const d = new Date(dateStr);
+    const now = new Date();
+    return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }
 
-  // --- Sales Report ---
+  db.ref("orders").on("value", snap => {
+    const data = snap.val() || {};
+    let totalToday = 0;
+    archiveBody.innerHTML = "";
+    const rows = [];
 
-  // Sales report calculation rules:
-  // Assuming each order item has: price, quantity, cost (cost data must be fetched)
-  // For demo, we will mock cost data for each item id (in RM)
-  const costData = {
-    "primebite": 6,
-    "beefncheese": 7,
-    "thefunguy": 7.5,
-    "thefixer": 9,
-    "chickbite": 3.5,
-    "goldcut": 4,
-    "thecapcut": 4.5,
-    "stripstack": 5,
-    "smokebeeftaco": 7,
-    "smokeychickentaco": 6.5,
-    "mixtaco": 8,
-    "smokebeequesadilla": 10,
-    "smokechickenquesadilla": 9,
-    "mixquesadilla": 11,
-    "classicsausage": 4,
-    "loadedsausage": 8
-  };
+    Object.values(data).reverse().forEach(o => {
+      const t = new Date(o.time || "");
+      const timeStr = t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dateStr = t.toLocaleDateString();
 
-  function formatRM(num) {
-    return 'RM ' + num.toFixed(2);
-  }
+      if (isToday(o.time)) totalToday += o.total || 0;
 
-  // Load all orders from Firebase, calculate totals and display sales report
-  async function loadSalesReport() {
-    salesLoading.style.display = 'block';
+      rows.push(`<tr><td>${o.name || "-"}</td><td>${dateStr} ${timeStr}</td><td>${(o.total || 0).toFixed(2)}</td></tr>`);
+    });
 
-    try {
-      const ordersSnap = await db.ref('orders').once('value');
-      const orders = ordersSnap.val() || {};
-
-      let grossTotal = 0;
-      let netTotal = 0;
-      let grossProfit = 0;
-      let netProfit = 0;
-
-      for (const orderId in orders) {
-        const order = orders[orderId];
-        if (!order.items || !Array.isArray(order.items)) continue;
-        order.items.forEach(item => {
-          const price = parseFloat(item.price) || 0;
-          const qty = parseInt(item.quantity) || 1;
-          const cost = costData[item.id] !== undefined ? costData[item.id] : (costData[item.name.toLowerCase().replace(/\s/g,'')] || 0);
-
-          const itemGross = price * qty;
-          const itemNet = (order.netPricePerItem && order.netPricePerItem[item.id]) ? order.netPricePerItem[item.id] * qty : itemGross; // fallback gross if no netPricePerItem
-          const itemGrossProfit = itemGross - (cost * qty);
-          const itemNetProfit = itemNet - (cost * qty);
-
-          grossTotal += itemGross;
-          netTotal += itemNet;
-          grossProfit += itemGrossProfit;
-          netProfit += itemNetProfit;
-        });
-      }
-
-      grossTotalEl.textContent = formatRM(grossTotal);
-      netTotalEl.textContent = formatRM(netTotal);
-      grossProfitEl.textContent = formatRM(grossProfit);
-      netProfitEl.textContent = formatRM(netProfit);
-
-    } catch (e) {
-      alert('Failed to load sales report: ' + e.message);
-      grossTotalEl.textContent = 'RM 0.00';
-      netTotalEl.textContent = 'RM 0.00';
-      grossProfitEl.textContent = 'RM 0.00';
-      netProfitEl.textContent = 'RM 0.00';
-    }
-
-    salesLoading.style.display = 'none';
-  }
-
-  // --- Init ---
-
-  loadOffdayStatus();
-  loadMenuAvailability();
-  loadSalesReport();
-
-  // Optional: Refresh sales report every 1 min
-  setInterval(loadSalesReport, 60000);
+    todayTotal.textContent = "RM " + totalToday.toFixed(2);
+    archiveBody.innerHTML = rows.join("\n");
+    salesLoading.style.display = "none";
+  });
 </script>
 
 </body>
