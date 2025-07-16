@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Snapbite™ Admin Panel</title>
@@ -28,6 +30,7 @@
 </head>
 <body>
   <h1>Snapbite™ Admin Panel</h1>
+
   <div class="section">
     <h2>Shop Status</h2>
     <div class="toggle-switch">
@@ -36,6 +39,7 @@
     </div>
     <button onclick="endOfDay()">End of Day</button>
   </div>
+
   <div class="section">
     <h2>Menu Availability</h2>
     <table>
@@ -43,6 +47,7 @@
       <tbody id="menuTable"></tbody>
     </table>
   </div>
+
   <div class="section">
     <h2>Add-on Availability</h2>
     <table>
@@ -50,15 +55,18 @@
       <tbody id="addonTable"></tbody>
     </table>
   </div>
+
   <div class="section">
     <h2>Sales Report</h2>
     <div class="report-box"><h3>Today’s Sales</h3><p id="todaySales">RM 0.00</p></div>
     <canvas id="salesChart" height="150"></canvas>
   </div>
+
   <div class="section">
     <h2>Archived Orders</h2>
     <ul id="archiveList"></ul>
   </div>
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyB_gnrfNMlJaNu6zSZqX7eiXzbZrnmtA2M",
@@ -70,26 +78,129 @@
     appId: "1:146625734660:web:23ada593e4818ed7332d51"
   };
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();const menuData = { Beef: ["Primebite™", "Beef N’ Cheese™", "The Fun Guy™", "The Fixer™"], Chicken: ["Chickbite™", "Goldcut™", "The Cap Cut™", "Stripstack™"], "Tex-Mex": ["Smoke Beef Taco™", "Smokey Chicken Taco™", "Mix Taco™", "Smoke Beef Quesadilla™", "Smoke Chicken Quesadilla™", "Mix Quesadilla™"], Sausage: ["Classic Sausage™", "Loaded Sausage™"], Pasta: ["Mac N Cheese", "Creamy Truffle Mushroom", "Alfredo Chicken Pasta"] };
+  const db = firebase.database();
 
-const addonList = ["Cheese", "Egg", "Bacon"];
+  const menuData = {
+    Beef: ["Primebite™", "Beef N’ Cheese™", "The Fun Guy™", "The Fixer™"],
+    Chicken: ["Chickbite™", "Goldcut™", "The Cap Cut™", "Stripstack™"],
+    "Tex-Mex": ["Smoke Beef Taco™", "Smokey Chicken Taco™", "Mix Taco™", "Smoke Beef Quesadilla™", "Smoke Chicken Quesadilla™", "Mix Quesadilla™"],
+    Sausage: ["Classic Sausage™", "Loaded Sausage™"]
+  };
+  const addonList = ["Cheese", "Egg", "Bacon"];
 
-function formatRM(val) { return "RM " + val.toFixed(2); }
+  function formatRM(val) {
+    return "RM " + val.toFixed(2);
+  }
 
-function loadOffday() { db.ref('settings/offday').on('value', snap => { const val = snap.val(); const toggle = document.getElementById('offdayToggle'); toggle.checked = !!val; document.getElementById('offdayLabel').textContent = toggle.checked ? "Shop is CLOSED" : "Shop is OPEN"; document.getElementById('offdayLabel').style.color = toggle.checked ? "#ff3b3b" : "#00ff00"; }); document.getElementById('offdayToggle').addEventListener('change', e => { db.ref('settings/offday').set(e.target.checked); }); }
+  function loadOffday() {
+    db.ref('settings/offday').on('value', snap => {
+      const val = snap.val();
+      const toggle = document.getElementById('offdayToggle');
+      toggle.checked = !!val;
+      document.getElementById('offdayLabel').textContent = toggle.checked ? "Shop is CLOSED" : "Shop is OPEN";
+      document.getElementById('offdayLabel').style.color = toggle.checked ? "#ff3b3b" : "#00ff00";
+    });
+    document.getElementById('offdayToggle').addEventListener('change', e => {
+      db.ref('settings/offday').set(e.target.checked);
+    });
+  }
 
-function loadAvailability() { const menuTable = document.getElementById('menuTable'); const addonTable = document.getElementById('addonTable'); db.ref('menuAvailability').once('value').then(snap => { const val = snap.val() || {}; menuTable.innerHTML = ''; for (const cat in menuData) { menuData[cat].forEach(item => { const available = val[item] !== false; menuTable.innerHTML += <tr><td>${cat}</td><td>${item}</td><td><input type="checkbox" ${available ? 'checked' : ''} onchange="toggleMenu('${item}', this.checked)"></td></tr>; }); } }); db.ref('addonAvailability').once('value').then(snap => { const val = snap.val() || {}; addonTable.innerHTML = ''; addonList.forEach(add => { const available = val[add] !== false; addonTable.innerHTML += <tr><td>${add}</td><td><input type="checkbox" ${available ? 'checked' : ''} onchange="toggleAddon('${add}', this.checked)"></td></tr>; }); }); }
+  function loadAvailability() {
+    const menuTable = document.getElementById('menuTable');
+    const addonTable = document.getElementById('addonTable');
+    db.ref('menuAvailability').once('value').then(snap => {
+      const val = snap.val() || {};
+      menuTable.innerHTML = '';
+      for (const cat in menuData) {
+        menuData[cat].forEach(item => {
+          const available = val[item] !== false;
+          menuTable.innerHTML += `<tr><td>${cat}</td><td>${item}</td><td><input type="checkbox" ${available ? 'checked' : ''} onchange="toggleMenu('${item}', this.checked)"></td></tr>`;
+        });
+      }
+    });
+    db.ref('addonAvailability').once('value').then(snap => {
+      const val = snap.val() || {};
+      addonTable.innerHTML = '';
+      addonList.forEach(add => {
+        const available = val[add] !== false;
+        addonTable.innerHTML += `<tr><td>${add}</td><td><input type="checkbox" ${available ? 'checked' : ''} onchange="toggleAddon('${add}', this.checked)"></td></tr>`;
+      });
+    });
+  }
 
-function toggleMenu(item, val) { db.ref('menuAvailability/' + item).set(val); } function toggleAddon(addon, val) { db.ref('addonAvailability/' + addon).set(val); }
+  function toggleMenu(item, val) {
+    db.ref('menuAvailability/' + item).set(val);
+  }
+  function toggleAddon(addon, val) {
+    db.ref('addonAvailability/' + addon).set(val);
+  }
 
-function endOfDay() { db.ref('orders').once('value').then(snap => { const orders = snap.val() || {}; const archiveRef = db.ref('archives/' + new Date().toISOString().split('T')[0]); archiveRef.set(orders); db.ref('orders').remove(); alert('End of Day complete. Orders archived.'); loadArchive(); updateSales(0); }); }
+  function endOfDay() {
+    db.ref('orders').once('value').then(snap => {
+      const orders = snap.val() || {};
+      const archiveRef = db.ref('archives/' + new Date().toISOString().split('T')[0]);
+      archiveRef.set(orders);
+      db.ref('orders').remove();
+      alert('End of Day complete. Orders archived.');
+      loadArchive();
+      updateSales(0);
+    });
+  }
 
-function loadArchive() { db.ref('archives').once('value').then(snap => { const val = snap.val() || {}; const list = document.getElementById('archiveList'); list.innerHTML = ''; Object.keys(val).reverse().forEach(date => { list.innerHTML += <li><strong>${date}</strong> - ${Object.keys(val[date]).length} orders</li>; }); }); }
+  function loadArchive() {
+    db.ref('archives').once('value').then(snap => {
+      const val = snap.val() || {};
+      const list = document.getElementById('archiveList');
+      list.innerHTML = '';
+      Object.keys(val).reverse().forEach(date => {
+        list.innerHTML += `<li><strong>${date}</strong> - ${Object.keys(val[date]).length} orders</li>`;
+      });
+    });
+  }
 
-function updateSales(amount) { document.getElementById('todaySales').textContent = formatRM(amount); }
+  function updateSales(amount) {
+    document.getElementById('todaySales').textContent = formatRM(amount);
+  }
 
-function loadSalesChart() { db.ref('orders').once('value').then(snap => { const orders = snap.val() || {}; let total = 0; for (let k in orders) { if (Array.isArray(orders[k].items)) { orders[k].items.forEach(i => { const qty = parseInt(i.quantity) || 1; const price = parseFloat(i.price) || 0; total += price * qty; }); } } updateSales(total); const ctx = document.getElementById('salesChart').getContext('2d'); new Chart(ctx, { type: 'bar', data: { labels: ['Today'], datasets: [{ label: 'Sales (RM)', data: [total], backgroundColor: '#ff9500' }] }, options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } }); }); }
+  function loadSalesChart() {
+    db.ref('orders').once('value').then(snap => {
+      const orders = snap.val() || {};
+      let total = 0;
+      for (let k in orders) {
+        if (Array.isArray(orders[k].items)) {
+          orders[k].items.forEach(i => {
+            const qty = parseInt(i.quantity) || 1;
+            const price = parseFloat(i.price) || 0;
+            total += price * qty;
+          });
+        }
+      }
+      updateSales(total);
+      const ctx = document.getElementById('salesChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Today'],
+          datasets: [{
+            label: 'Sales (RM)',
+            data: [total],
+            backgroundColor: '#ff9500'
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    });
+  }
 
-loadOffday(); loadAvailability(); loadSalesChart(); loadArchive(); </script></body>
-
+  loadOffday();
+  loadAvailability();
+  loadSalesChart();
+  loadArchive();
+</script>
+</body>
 </html>
